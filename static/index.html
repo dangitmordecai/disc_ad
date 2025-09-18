@@ -1,0 +1,3299 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>botto — dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    :root{ --header-h: 56px; }                     /* thin header */
+    #siteHeader{
+      position: fixed; top:0; left:0; right:0; height:var(--header-h);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 14px;
+      background:rgba(13,17,23,.78);
+      -webkit-backdrop-filter:blur(10px) saturate(1.1);
+      backdrop-filter:blur(10px) saturate(1.1);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      z-index:100;
+    }
+    #siteHeader .brand{
+      display:flex; align-items:center; gap:10px; font-weight:800;
+      letter-spacing:.2px;
+      background:linear-gradient(90deg, #e6edf3 0%, #93c5fd 60%, #a78bfa 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    #siteHeader .pill{padding:2px 8px;border-radius:999px;background:#22d3ee;color:#0b0f14;font-size:12px}
+
+    
+
+    :root{
+      --bg:#0f172a;--ink:#e2e8f0;--muted:#94a3b8;--card:#111827;--line:#1f2937;
+      --sidebar:#0b1220;--folder:#0e1628;--accent:#2563eb;--accent2:#0ea5e9;--warn:#f59e0b;
+      --drop:#1b2540
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;overflow:hidden}
+    .app{
+      display:grid;
+      grid-template-columns:300px 1fr 380px;
+      height: calc(100vh - var(--header-h, var(--hdr, 52px)));
+      margin-top: var(--header-h, var(--hdr, 52px));
+      overflow: hidden;
+    }
+    .sidebar {
+      background: rgba(11, 18, 32, 0.6);   /* semi-transparent to blend like inspector */
+      border-right: 1px solid var(--line);
+      padding: 14px;
+      overflow-y: auto;
+      direction: rtl;                       /* keeps scrollbar on left */
+      backdrop-filter: blur(6px);           /* same subtle blur as inspector feel */
+    }
+
+    .sidebar * {
+      direction: ltr;            /* reset for child content */
+    }
+
+
+    /* Match scrollbar style for the main center panel too */
+    .main::-webkit-scrollbar {
+      width: 10px;
+    }
+    .main::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .main::-webkit-scrollbar-thumb {
+      background-color: #334155;
+      border-radius: 6px;
+      border: 2px solid transparent;
+    }
+    .main::-webkit-scrollbar-thumb:hover {
+      background-color: #475569;
+    }
+
+    /* Firefox */
+    .main {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent;
+    }
+
+
+    /* WebKit browsers */
+    .sidebar::-webkit-scrollbar,
+    .inspector::-webkit-scrollbar {
+      width: 10px;
+    }
+    .sidebar::-webkit-scrollbar-track,
+    .inspector::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb,
+    .inspector::-webkit-scrollbar-thumb {
+      background-color: #334155;
+      border-radius: 6px;
+      border: 2px solid transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    .inspector::-webkit-scrollbar-thumb:hover {
+      background-color: #475569;
+    }
+
+    /* Firefox */
+    .sidebar,
+    .inspector {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent;
+    }
+
+
+    .main{padding:18px;border-right:1px solid var(--line);overflow:auto}
+    .inspector{padding:18px;overflow:auto}
+
+    h1{margin:0 0 10px 0}
+    .topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--accent2);color:#0b1220;font-size:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+    label{display:block;margin:8px 0 4px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:var(--ink)}
+    textarea{min-height:96px}
+    button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+    button.secondary{background:#334155}
+    button.warn{background:var(--warn);color:#111}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:1200px){.app{grid-template-columns:1fr;}.main{border-right:none}}
+
+
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; }
+    .modal.hidden { display:none; }
+    .modal .modal-content { background:var(--card); padding:20px; border-radius:12px; width:300px; }
+
+
+    /* Toolbox — fresh layout */
+    .toolbox-header{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .tool-search{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5a;background:#0b1427;color:var(--ink)}
+
+    #toolbox{margin-top:8px}
+
+    /* grid instead of stacked folders */
+    .toolgrid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:10px;
+    }
+
+    /* pill cards */
+    .tool-pill{
+      background:#0b1427;
+      border:1px solid #27324a;
+      border-radius:12px;
+      padding:10px;
+      cursor:grab;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      transition:transform .08s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .tool-pill:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
+      border-color:#2f3d61;
+      background:#0d1630;
+    }
+    .tool-pill .title{font-weight:600}
+    .tool-pill .note{font-size:12px;color:var(--muted);line-height:1.25}
+
+    /* action row */
+    .tool-pill .row{
+      display:flex;justify-content:space-between;align-items:center;gap:8px
+    }
+    .tool-pill .add{
+      background:#10203e;border:1px solid #2b3a58;border-radius:8px;
+      padding:6px 10px;color:#dbe2ef;cursor:pointer
+    }
+    .tool-pill .add:hover{background:#132548}
+
+    /* tiny color tags */
+    .tags{display:flex;flex-wrap:wrap;gap:6px}
+    .tag{
+      font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid transparent;
+      background:#111a2c; color:#cbd5e1; user-select:none
+    }
+
+    /* category accent dots (by data-group) */
+    .tool-pill[data-group="Triggers"] .title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:999px;background:#22c55e;margin-right:6px}
+    .tool-pill[data-group="Messaging"] .title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:999px;background:#60a5fa;margin-right:6px}
+    .tool-pill[data-group="Moderation & Roles"] .title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:999px;background:#a78bfa;margin-right:6px}
+    .tool-pill[data-group="Tickets & Interactions"] .title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:999px;background:#f59e0b;margin-right:6px}
+    .tool-pill[data-group="Logic"] .title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:999px;background:#f97316;margin-right:6px}
+
+   
+
+
+    /* Canvas */
+    .tabs{display:flex;gap:6px;margin-bottom:10px}
+    .tab{background:#1a2440;border:1px solid var(--line);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .lane{background:#0b1220;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px}
+    .lane-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .nodes{display:flex;flex-wrap:wrap;gap:8px}
+    .node{background:#0e1628;border:1px solid #28344e;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px}
+    .node.trigger{border-left:3px solid #22c55e}
+    .node.action{border-left:3px solid #60a5fa}
+    .node .title{font-weight:600}
+    .node .sub{font-size:12px;color:var(--muted)}
+    .node .icon{opacity:.7}
+    .node .x{background:#231f31;border:1px solid #3a3650;color:#eee;padding:2px 8px;border-radius:6px;cursor:pointer}
+    .add-gap{border:1px dashed #2b3a58;border-radius:10px;padding:6px 10px;color:var(--muted)}
+    .dropping{background:var(--drop)}
+    .hint{color:var(--muted);font-size:12px}
+    .toolbar{display:flex;gap:8px;align-items:center}
+
+    /* Inspector */
+    .inspector h3{margin:0 0 6px 0}
+    .preview{border:1px dashed #334155;border-radius:10px;padding:10px;margin-top:8px;background:#0b1220}
+    .itabs{display:flex;gap:6px;margin:6px 0 10px 0}
+    .itabs button{background:#1a2440;border:1px solid var(--line);padding:6px 10px;border-radius:8px;color:var(--ink);cursor:pointer}
+    .itabs button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .isection{display:none}
+    .isection.active{display:block}
+
+    /* --- Full-width bottom drawer preview (middle column) --- */
+    :root{ --drawer-height: 240px; --handle-h: 28px; }
+
+    #previewDock{
+      position: fixed;
+      left: calc(300px + 18px);        /* sidebar width + main padding */
+      right: calc(380px + 18px);       /* inspector width + its padding gap */
+      bottom: 0;
+      height: var(--drawer-height);
+      z-index: 1000;
+      transform: translateY(0);
+      transition: transform .25s ease;
+    }
+
+
+
+    #previewDock.collapsed{
+      /* move the drawer down so only the handle tab remains visible */
+      transform: translateY(calc(var(--drawer-height) - var(--handle-h)));
+    }
+
+    #previewDock .dock-inner{
+      height:100%;
+      display:flex; flex-direction:column;
+      background: rgba(32,35,42,.92);
+      -webkit-backdrop-filter: blur(10px) saturate(1.15);
+      backdrop-filter: blur(10px) saturate(1.15);
+      border:1px solid rgba(255,255,255,.08);
+      border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+      box-shadow:0 -10px 36px rgba(0,0,0,.45);
+    }
+
+
+
+    #previewDock .handle{
+      position:absolute; top: calc(-1 * var(--handle-h)); left: 24px;
+      height: var(--handle-h); width: 140px;
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      font-size:12px; color:#cbd5e1;
+      background: rgba(32,35,42,.92);
+      -webkit-backdrop-filter: blur(10px) saturate(1.15);
+      backdrop-filter: blur(10px) saturate(1.15);
+      border:1px solid rgba(255,255,255,.08); border-bottom:none;
+      border-radius: 10px 10px 0 0;
+      cursor:pointer;
+      box-shadow: 0 -6px 18px rgba(0,0,0,.25);
+    }
+    #previewDock .handle .chev{ transition: transform .2s ease; }
+    #previewDock.collapsed .handle .chev{ transform: rotate(180deg); }
+
+    #dockHead{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06);
+      color:#949BA4; font-size:12px;
+    }
+    #dockContent{ flex:1; overflow:auto; padding:10px; }
+
+    /* Make the collapsed drawer non-interactive so it can't block clicks */
+    #previewDock { pointer-events: none; }
+    #previewDock .handle { pointer-events: auto; }
+
+    /* When it's open, re-enable interaction for the whole drawer */
+    #previewDock:not(.collapsed) { pointer-events: auto; }
+
+
+
+    /* keep the Discord visual styles */
+    .discord-msg{ color:#DBDEE1; }
+
+
+    /* === GitHub-style dark theme overrides (drop-in) === */
+    :root{
+      --bg:#0d1117;          /* page background */
+      --ink:#e6edf3;         /* primary text */
+      --muted:#a0b3c3;       /* secondary text */
+      --card:#0f141b;        /* card bg */
+      --line:#1f2937;        /* borders */
+      --sidebar:#0c1117;     /* left pane */
+      --folder:#0f1722;      /* folder headings */
+      --accent:#7c3aed;      /* purple */
+      --accent2:#22d3ee;     /* cyan */
+      --warn:#f59e0b;
+    }
+
+    /* overall */
+    body{ background:var(--bg); color:var(--ink); }
+
+    /* glass cards + subtle border glow */
+    .card{
+      background:
+        radial-gradient(1200px 200px at 50% -40%, rgba(124,58,237,.06), transparent 60%),
+        var(--card);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    /* left sidebar (scrollbar already customized in your file) */
+    .sidebar{
+      background:
+        radial-gradient(900px 200px at 0% -30%, rgba(34,211,238,.06), transparent 60%),
+        var(--sidebar);
+      border-right:1px solid rgba(255,255,255,.06);
+    }
+
+    /* folder sections (tool groups) */
+    .folder>summary{
+      background:linear-gradient(180deg, #0f1722 0%, #0c121c 100%);
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+
+    /* tiles in toolbox */
+    .tool{
+      background:linear-gradient(180deg,#0b1420 0%, #0a131e 100%);
+      border:1px solid rgba(255,255,255,.07);
+      transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .tool:hover{
+      transform: translateY(-1px);
+      border-color: rgba(124,58,237,.35);
+      box-shadow:0 8px 22px rgba(124,58,237,.08);
+    }
+
+    /* inputs */
+    input,textarea,select{
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.08);
+      outline: none;
+    }
+    input:focus,textarea:focus,select:focus{
+      border-color: #5b9cff88;
+      box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+    }
+
+    /* buttons (keep your existing .secondary/.warn working) */
+    button{
+      border:none;
+      border-radius:10px;
+      padding:10px 14px;
+      font-weight:600;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+      color:#0b0f14;
+      box-shadow: 0 3px 14px rgba(124,58,237,.25);
+    }
+    button:hover{ filter:saturate(1.05) brightness(1.05); }
+    button.secondary{
+      background: #1a2232;
+      color: var(--ink);
+      box-shadow:none;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    button.warn{ background: var(--warn); color:#101014; }
+
+    /* tabs */
+    .tab{
+      background:#121823;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .tab.active{
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+      border-color: transparent;
+      color:#0b0f14;
+    }
+
+    /* preview dock skin */
+    #previewDock .dock-inner{
+      background:#1a202c;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    #previewDock .dock-head{
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    /* “chips” used below for toolbox tags */
+    .tag{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0c1320;
+    }
+    .tag .dot{ width:8px; height:8px; border-radius:999px; display:inline-block; }
+    .tag-green  { background:#0f291d; border-color:#2b4d39; }
+    .tag-green .dot{ background:#22c55e; }
+    .tag-sky    { background:#0d2330; border-color:#27475a; }
+    .tag-sky   .dot{ background:#22d3ee; }
+    .tag-rose   { background:#29121d; border-color:#4d2a3a; }
+    .tag-rose  .dot{ background:#fb7185; }
+    .tag-amber  { background:#2a2315; border-color:#4c3d1c; }
+    .tag-amber .dot{ background:#f59e0b; }
+    .tag-indigo { background:#171a33; border-color:#2b2f58; }
+    .tag-indigo .dot{ background:#6366f1; }
+
+    /* headline treatment for the main H1 */
+    .topbar h1{
+      background: linear-gradient(90deg, #e6edf3 0%, #93c5fd 60%, #a78bfa 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      letter-spacing:.2px; font-weight:800;
+    }
+
+
+    /* --- Sticky frosted header --- */
+    .topbar{
+      position: sticky; top: 0; z-index: 40;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      background: rgba(13,17,23,.78);
+      -webkit-backdrop-filter: blur(10px) saturate(1.1);
+      backdrop-filter: blur(10px) saturate(1.1);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .topbar h1{
+      background: linear-gradient(90deg, #e6edf3 0%, #93c5fd 60%, #a78bfa 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      letter-spacing:.2px; font-weight:800; margin:0;
+    }
+
+    /* --- Frosted toolbox / sidebar --- */
+    .sidebar{
+      background: rgba(12,17,23,.72);
+      -webkit-backdrop-filter: blur(10px) saturate(1.15);
+      backdrop-filter: blur(10px) saturate(1.15);
+      border-right:1px solid rgba(255,255,255,.08);
+    }
+
+    /* Pill cards in toolbox: translucent + glow */
+    .tool-pill{
+      background: rgba(12,19,32,.55);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    }
+    .tool-pill:hover{
+      background: rgba(13,22,48,.70);
+      border-color: rgba(124,58,237,.35);
+      box-shadow:0 10px 26px rgba(124,58,237,.12);
+    }
+
+    .card{ 
+      background:
+        radial-gradient(1200px 200px at 50% -40%, rgba(124,58,237,.06), transparent 60%),
+        var(--card);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .tab{ background:#121823; border:1px solid rgba(255,255,255,.06); }
+    .tab.active{
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+      border-color: transparent; color:#0b0f14;
+    }
+
+    .hidden { display: none !important; }
+    /* Remove hover-open behavior; JS controls visibility */
+    #draftsDropdown:hover #draftsMenu { /* removed on purpose */ }
+
+
+
+    /* ===== Full-width sticky site header ===== */
+    :root { --hdr: 52px; }
+
+    .site-header{
+      position: fixed; inset: 0 0 auto 0; height: var(--hdr); z-index: 60;
+      display: grid; grid-template-columns: 300px 1fr 380px;  /* matches .app columns */
+      align-items: center;
+      background: rgba(13,17,23,.78);
+      -webkit-backdrop-filter: blur(10px) saturate(1.1);
+      backdrop-filter: blur(10px) saturate(1.1);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .site-header .left   { padding-left: 14px; }
+    .site-header .center { display:flex; align-items:center; gap:12px; padding: 0 18px; }
+    .site-header .right  { display:flex; justify-content:flex-end; gap:8px; padding-right: 18px; }
+
+    .site-title{
+      margin:0;
+      font-size:18px; line-height:1;
+      background: linear-gradient(90deg, #e6edf3 0%, #93c5fd 60%, #a78bfa 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:800;
+    }
+    .site-title .pill{
+      margin-left: 8px; font-size:11px; padding:2px 8px; border-radius:999px;
+      background: var(--accent2); color:#0b0f14; font-weight:700;
+    }
+
+
+    /* === Discord message row: screenshot-accurate === */
+    .discord-msg{ padding:0 }                 /* no extra chrome, pure row */
+    .discord-row{ display:flex; gap:12px; align-items:flex-start; }
+    .discord-avatar{
+      width:40px; height:40px; border-radius:999px;
+      background:#5865F2;                      /* flat color circle */
+      flex:0 0 40px;
+    }
+    .discord-body{ flex:1; min-width:0; }
+    .discord-header{
+      display:flex; align-items:baseline; gap:8px;
+      margin-top:2px;
+    }
+    .discord-author{ font-weight:600; color:#F2F3F5; }
+    .discord-time{ font-size:12px; color:#949BA4; }
+    .discord-content{
+      margin-top:4px; line-height:1.35; color:#DBDEE1; word-break:break-word;
+    }
+
+    /* embeds still look nice if used later */
+    .discord-embed{
+      margin-top:6px; padding:10px 12px; border-left:4px solid #5865F2;
+      background:#1E1F22; border-radius:6px; color:#DBDEE1; 
+    }
+    .discord-embed .emb-title{ font-weight:600; margin-bottom:4px; color:#F2F3F5; }
+    .discord-embed .emb-desc{ white-space:pre-wrap; }
+
+
+    /* === Toolbox = match Inspector look (transparent panel) === */
+    .sidebar{
+      background: transparent !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      border-right: 1px solid rgba(255,255,255,.08); /* same divider as inspector */
+      box-shadow: none !important;
+    }
+
+    /* kill any inner shells/panels that were giving it a box bg */
+    .sidebar .card,
+    .sidebar .panel,
+    .sidebar .toolbox-shell,
+    .sidebar .toolbox-wrap,
+    .sidebar .scroll,
+    .sidebar .group,
+    .sidebar .section{
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* group headers (the <summary> elements) – make them float like chips */
+    .sidebar .folder>summary{
+      background: transparent !important;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin: 10px 10px 6px;
+      color: var(--muted);
+    }
+
+    /* the container below a summary */
+    .sidebar .folder,
+    .sidebar .items{
+      background: transparent !important;
+    }
+
+    /* tool tiles – keep the translucent “glass” look but lighten it slightly to match the right side */
+    .tool,
+    .tool-pill{
+      background: rgba(12,19,32,.45) !important;
+      -webkit-backdrop-filter: blur(6px) saturate(1.05);
+      backdrop-filter: blur(6px) saturate(1.05);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: 0 6px 18px rgba(0,0,0,.20);
+    }
+    .tool:hover,
+    .tool-pill:hover{
+      background: rgba(13,22,48,.62) !important;
+      border-color: rgba(124,58,237,.30);
+      box-shadow:0 10px 24px rgba(124,58,237,.10);
+    }
+
+    /* toolbox search field – same style as inspector inputs */
+    .sidebar input[type="search"],
+    .sidebar input[type="text"]#toolSearch{
+      background:#0b1220 !important;
+      border:1px solid rgba(255,255,255,.08) !important;
+      border-radius: 10px !important;
+      color: var(--ink) !important;
+    }
+
+
+    /* === Middle canvas panel matches sidebar + inspector === */
+    .main {
+      background: transparent !important;              /* same as sidebar + inspector */
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border-left: 1px solid rgba(255,255,255,.08);
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+
+
+    .main .card,
+    .main .section,
+    .main .flow,
+    .main .command {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255,255,255,.08);  /* keep light dividers */
+    }
+
+
+
+    /* === Center canvas: make it match the inspector/toolbox === */
+
+    /* kill the solid panel on each flow/command lane */
+    .main .lane{
+      background: transparent !important;
+      border: 1px solid rgba(255,255,255,.08) !important;
+      box-shadow: none !important;
+    }
+
+    /* lane header strip should blend in */
+    .main .lane-header{
+      background: transparent !important;
+      border-bottom: 1px dashed rgba(255,255,255,.06) !important;
+    }
+
+    /* the “nodes” row and the dashed drop gaps shouldn’t add their own bg */
+    .main .nodes{ background: transparent !important; }
+    .main .add-gap{
+      background: transparent !important;
+      border-color: rgba(255,255,255,.14) !important;
+      color: var(--muted) !important;
+    }
+
+    /* node tiles: translucent glass cards (match toolbox card treatment) */
+    .main .node{
+      background: rgba(12,19,32,.45) !important;
+      -webkit-backdrop-filter: blur(6px) saturate(1.05);
+      backdrop-filter: blur(6px) saturate(1.05);
+      border: 1px solid rgba(255,255,255,.08) !important;
+      box-shadow: 0 6px 18px rgba(0,0,0,.20) !important;
+    }
+    .main .node:hover{
+      background: rgba(13,22,48,.62) !important;
+      border-color: rgba(124,58,237,.30) !important;
+      box-shadow: 0 10px 24px rgba(124,58,237,.10) !important;
+    }
+
+    /* keep the trigger/action accents but make them crisp */
+    .main .node.trigger{ border-left: 3px solid #22c55e !important; }
+    .main .node.action { border-left: 3px solid #60a5fa !important; }
+
+    /* little “x” remove button—tone to the theme */
+    .main .node .x{
+      background: rgba(35,31,49,.65) !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      color: #e6edf3 !important;
+    }
+
+    /* cards that still appear inside the canvas (empty states, etc.) */
+    .main .card{
+      background: transparent !important;
+      border: 1px solid rgba(255,255,255,.08) !important;
+      box-shadow: none !important;
+    }
+
+
+    .mini-actions { display:flex; gap:6px; margin-top:4px; }
+    button.mini { padding:4px 8px; font-size:12px; line-height:1; border-radius:8px; }
+    .auth-mini-links{
+      display:flex; align-items:center; gap:6px; margin-top:2px;
+      font-size:11px; line-height:1;
+    }
+    .auth-mini-links a{
+      color:#93c5fd; text-decoration:none; opacity:.9;
+    }
+    .auth-mini-links a:hover{ text-decoration:underline; opacity:1; }
+    .auth-mini-links .sep{ color:#64748b; }
+
+    .menu .menu-item:hover{
+      background: rgba(255,255,255,.06);
+    }
+
+    /* Toast look */
+    .toast {
+      background: rgba(13,17,23,.92);
+      -webkit-backdrop-filter: blur(10px) saturate(1.1);
+      backdrop-filter: blur(10px) saturate(1.1);
+      border: 1px solid rgba(255,255,255,.08);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.35);
+      min-width: 260px;
+    }
+    .toast .title { font-weight: 700; margin-bottom: 4px; }
+    .toast.ok    { border-left: 3px solid #22c55e; }
+    .toast.warn  { border-left: 3px solid var(--warn); }
+    .toast.error { border-left: 3px solid #ef4444; }
+
+
+
+
+    /* =========================================================
+      BOTTO — Neo-Retro Theme (drop-in override)
+      Paste at the very end of your <style> so it wins in CSS specificity
+      ========================================================= */
+
+    :root{
+      /* brand + palette (matches your Canva purple) */
+      --brand:  #8B5CF6;   /* violet */
+      --brand2: #D946EF;   /* magenta glow */
+      --aqua:   #22D3EE;   /* cyan accent */
+      --bg:     #0B0920;   /* deep indigo */
+      --card:   #0E0A27;   /* panel */
+      --ink:    #EDEBFF;   /* primary text */
+      --muted:  #B7B3D9;   /* secondary text */
+      --line:   rgba(255,255,255,.10);
+    }
+
+    /* --- global body: soft CRT + stargrid background --- */
+    body{
+      background:
+        radial-gradient(1400px 600px at 15% -10%, rgba(139,92,246,.16), transparent 55%),
+        radial-gradient(1300px 600px at 100% 110%, rgba(217,70,239,.12), transparent 50%),
+        radial-gradient(800px 400px  at 70% 10%, rgba(34,211,238,.10), transparent 60%),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      position: relative;
+    }
+
+    /* faint scanlines (retro but very subtle for readability) */
+    body::before{
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.03), rgba(255,255,255,.03) 1px,
+          transparent 2px, transparent 3px
+        );
+      mix-blend-mode: soft-light; opacity:.15;
+    }
+
+    /* star grid dots */
+    body::after{
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity:.08;
+    }
+
+    /* keep the app over the decorations */
+    .app, #siteHeader, .site-header, #previewDock { position:relative; z-index:1; }
+
+    /* --- header / brand --- */
+    #siteHeader{
+      background: rgba(10,8,26,.75);
+      -webkit-backdrop-filter: blur(10px) saturate(1.15);
+      backdrop-filter: blur(10px) saturate(1.15);
+      border-bottom: 1px solid var(--line);
+    }
+    #siteHeader .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    #siteHeader .brand .logo-glyph{
+      font-family: "Press Start 2P", ui-monospace, monospace;
+      font-size:13px; letter-spacing:1px;
+      background: linear-gradient(90deg, var(--aqua), var(--brand2));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow: 0 0 12px rgba(34,211,238,.35);
+    }
+    #siteHeader .brand .logo-word{
+      font-family: "Press Start 2P", ui-monospace, monospace;
+      font-size: 14px; letter-spacing: 1px;
+      background: linear-gradient(90deg, #F5F3FF 0%, var(--brand) 60%, var(--aqua) 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter: drop-shadow(0 2px 0 rgba(0,0,0,.35));
+    }
+    #siteHeader .pill{
+      background: var(--aqua);
+      color:#0b0a16; border:1px solid rgba(0,0,0,.35);
+    }
+
+    /* --- panels (sidebar / main / inspector) --- */
+    .sidebar, .main, .inspector{
+      background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%) , rgba(14,10,39,.55) !important;
+      -webkit-backdrop-filter: blur(8px) saturate(1.05);
+      backdrop-filter: blur(8px) saturate(1.05);
+    }
+    .sidebar{ border-right: 1px solid var(--line); }
+    .main   { border-left:  1px solid var(--line); border-right: 1px solid var(--line); }
+
+    /* unified scrollbars */
+    .sidebar, .main, .inspector{
+      scrollbar-width: thin;
+      scrollbar-color: rgba(139,92,246,.55) transparent;
+    }
+    .sidebar::-webkit-scrollbar,
+    .main::-webkit-scrollbar,
+    .inspector::-webkit-scrollbar{ width:10px; }
+    .sidebar::-webkit-scrollbar-thumb,
+    .main::-webkit-scrollbar-thumb,
+    .inspector::-webkit-scrollbar-thumb{
+      background: linear-gradient(var(--brand), var(--brand2));
+      border-radius: 8px; border: 2px solid transparent;
+    }
+
+    /* --- cards + lanes (retro bezel) --- */
+    .card, .lane{
+      background: var(--card) !important;
+      border: 1px solid var(--line) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.06),
+        inset 0 -1px 0 rgba(0,0,0,.35),
+        0 10px 28px rgba(0,0,0,.35) !important;
+      border-radius: 12px !important;
+    }
+    .lane-header{
+      border-bottom: 1px dashed rgba(255,255,255,.14) !important;
+    }
+
+    /* --- toolbox tiles (neon micro-glow) --- */
+    .tool-pill{
+      background: rgba(22,18,52,.55) !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25) !important;
+    }
+    .tool-pill:hover{
+      border-color: rgba(139,92,246,.45) !important;
+      box-shadow: 0 10px 26px rgba(139,92,246,.15) !important;
+      transform: translateY(-1px);
+    }
+    .tool-pill .title{ font-weight:700; }
+    .tag{ background:#171534; border:1px solid rgba(139,92,246,.35); color:#DED9FF; }
+
+    /* --- nodes on canvas --- */
+    .node{
+      background: rgba(23,18,56,.55) !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      box-shadow: 0 6px 18px rgba(0,0,0,.18) !important;
+    }
+    .node.trigger{ border-left:3px solid #22c55e !important; }
+    .node.action { border-left:3px solid var(--brand) !important; }
+    .node .x{
+      background: rgba(35,31,49,.65) !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+    }
+
+    /* --- tabs --- */
+    .tabs .tab{
+      background:#12102A !important;
+      border:1px solid var(--line) !important;
+    }
+    .tabs .tab.active{
+      color:#0d0a1d !important;
+      border-color: transparent !important;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--aqua) 100%) !important;
+    }
+
+    /* --- inputs --- */
+    input, textarea, select{
+      background:#0E0B25 !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+      color:var(--ink) !important;
+    }
+    input:focus, textarea:focus, select:focus{
+      outline:none; border-color: var(--aqua) !important;
+      box-shadow: 0 0 0 3px rgba(34,211,238,.22) !important;
+    }
+
+    /* --- buttons --- */
+    button{
+      font-weight:700;
+      color:#0d0a1d !important;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--brand2) 60%, var(--aqua) 100%) !important;
+      border:none !important; border-radius:10px !important;
+      box-shadow: 0 6px 18px rgba(139,92,246,.35);
+    }
+    button:hover{ filter: saturate(1.05) brightness(1.05); }
+    button.secondary{
+      background: #1A173A !important; color: var(--ink) !important;
+      border:1px solid rgba(255,255,255,.12) !important; box-shadow:none !important;
+    }
+    button.warn{ background:#F59E0B !important; color:#20140A !important; }
+
+    /* --- top hints, micro text --- */
+    .hint{ color: var(--muted) !important; }
+
+    /* --- preview dock (CRT panel) --- */
+    #previewDock .dock-inner{
+      background: rgba(12,10,30,.9) !important;
+      border:1px solid var(--line) !important;
+    }
+    #dockHead{ border-bottom:1px solid var(--line) !important; }
+    .discord-msg{ color:#E8EAFF; }
+    .discord-embed{
+      border-left:4px solid var(--brand) !important;
+      background:#141226 !important;
+    }
+
+    /* --- Drafts dropdown menu hover --- */
+    .menu .menu-item:hover{ background: rgba(139,92,246,.15) !important; }
+
+    /* --- guild picker / pills --- */
+    .pill{ background: var(--aqua) !important; color:#0c0a1d !important; }
+
+    /* small utilities */
+    .botto .logo-word{ text-transform: lowercase; }
+
+
+    /* === Botto polish: white logo + single-color Add buttons + subtler glow === */
+
+    /* 1) Make the top-left brand mark white (works for text OR an <img>) */
+    #siteHeader .brand .logo-glyph,
+    #siteHeader .brand .logo-word{
+      background: none !important;
+      color: #FFFFFF !important;
+      text-shadow: none !important;
+    }
+    #siteHeader .brand img,
+    #siteHeader .brand .logo-img{
+      /* if you use an image mark, force it to white */
+      filter: brightness(0) invert(1) !important;
+      opacity: .95;
+    }
+
+    /* 2) “Add” buttons in the toolbox → single solid color */
+    .toolbox .add-btn,
+    .tool-pill .add-btn,
+    .tool .add,
+    .btn-add{
+      background: #8B5CF6 !important;      /* solid brand violet */
+      color: #0e0b25 !important;            /* readable text on violet */
+      border: 1px solid rgba(255,255,255,.14) !important;
+      border-radius: 10px !important;
+      box-shadow: none !important;
+      font-weight: 700;
+    }
+    .toolbox .add-btn:hover,
+    .tool-pill .add-btn:hover,
+    .tool .add:hover,
+    .btn-add:hover{
+      background: #7C3AED !important;       /* slightly darker on hover */
+    }
+
+    /* 3) Slightly more professional vibe: soften glows/scanlines */
+    body::before{ opacity: .10; }           /* scanlines a bit lighter */
+    .tool-pill:hover{
+      box-shadow: 0 8px 18px rgba(139,92,246,.12) !important;
+      transform: translateY(0);              /* no jump on hover */
+      border-color: rgba(139,92,246,.30) !important;
+    }
+
+    /* Keep other primary buttons as-is (gradients). If you ever want
+      *all* buttons single-color, target `button:not(.secondary)` instead. */
+
+
+
+
+
+
+
+
+  </style>
+</head>
+<body>
+
+
+  <header id="siteHeader" class="botto">
+    <div class="brand">
+      <span class="logo-glyph">‹/›</span>
+      <span class="logo-word">botto</span>
+    </div>
+
+    <!-- keep the rest of your toolbar as-is (auth box, Drafts, Publish, Login)… -->
+
+
+    <div class="toolbar" style="display:flex;gap:8px;align-items:center">
+    <div id="authBox" class="hidden" style="display:flex;align-items:center;gap:8px">
+      <img id="userAvatar" style="width:28px;height:28px;border-radius:9999px;border:1px solid #334155" alt="">
+      <div style="line-height:1">
+        <div id="userName" style="font-weight:600">User</div>
+        <!-- tiny actions row under the name -->
+        <div class="auth-mini-links">
+          <a id="accountLink" href="#">Account</a>
+          <span class="sep">·</span>
+          <a id="logoutLink" href="#">Logout</a>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Drafts dropdown -->
+    <div class="dropdown" id="draftsDropdown" style="position:relative">
+      <button class="secondary" id="draftsBtn">Drafts ▾</button>
+      <div class="menu hidden" id="draftsMenu"
+          style="position:absolute; right:0; top:100%; min-width:170px; background:var(--card);
+                  border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:6px; box-shadow:0 10px 26px rgba(0,0,0,.35)">
+
+        <button class="menu-item" id="draftSave"    style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Save draft</button>
+        <button class="menu-item" id="draftSaveAs"  style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Save draft as…</button>
+        <button class="menu-item" id="draftLoad"    style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Load draft</button>
+      </div>
+    </div>
+
+    <button id="publishAllTop" style="display:none">Publish</button>
+    <button id="loginBtn">Sign in with Discord</button>
+
+    </div>
+  </header>
+
+
+  <!-- subtle floating accent blobs -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:-1">
+    <div style="position:absolute;left:-10%;top:-10%;width:55vw;height:55vw;
+                background:radial-gradient(circle at 30% 30%, rgba(124,58,237,.18), transparent 55%);
+                filter:blur(30px)"></div>
+    <div style="position:absolute;right:-12%;bottom:-18%;width:60vw;height:60vw;
+                background:radial-gradient(circle at 70% 70%, rgba(34,211,238,.15), transparent 55%);
+                filter:blur(32px)"></div>
+  </div>
+
+
+  <div class="app">
+    <!-- ========== SIDEBAR / TOOLBOX ========== -->
+    <aside class="sidebar" id="sidebar">
+      <h2 style="margin:0 0 10px 0;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.1em">Toolbox</h2>
+
+
+
+      <div class="toolbox-header">
+        <input id="toolSearch" class="tool-search" placeholder="Search tools… (e.g. http, role, embed)" />
+      </div>
+
+      <!-- Folders rendered by JS -->
+      <div id="toolbox"></div>
+    </aside>
+
+    <main class="main">
+
+      <section class="card" style="padding:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="hint" style="margin:0;color:#94a3b8">Active Guild</label>
+          <select id="guildPicker" style="background:#0b1220;border:1px solid #334155;border-radius:10px;padding:8px 10px;min-width:260px;display:none"></select>
+          <span id="guildInfo" class="hint">Please sign in, then pick a guild to manage flows and commands.</span>
+        </div>
+      </section>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="flows">Flows</div>
+        <div class="tab" data-tab="commands">Commands</div>
+        <div class="tab" data-tab="secrets">Secrets</div>
+      </div>
+
+      <section id="flowsCanvas"></section>
+      <section id="commandsCanvas" style="display:none"></section>
+
+      <section id="secretsCanvas" style="display:none">
+        <div class="topbar">
+          <h2>Secrets</h2>
+          <button id="addSecretBtn">Add Secret</button>
+        </div>
+        <div id="secretsList"></div>
+      </section>
+
+      <div class="hint">Tip: Drag a <b>Trigger</b> to start a flow. Drag <b>Actions</b> between nodes. Click any node to edit in the Inspector.</div>
+    </main>
+
+
+      
+
+      <!-- Add Secret Modal -->
+      <div id="secretModal" class="modal hidden">
+        <div class="modal-content card">
+          <h3>Add Secret</h3>
+          <label>Key <input id="secretKey"></label>
+          <label>Value <input id="secretValue" type="password"></label>
+          <label>Scope
+            <select id="secretScope">
+              <option value="">User‑wide</option>
+            </select>
+          </label>
+          <div class="row">
+            <button id="saveSecret">Save</button>
+            <button id="cancelSecret" class="secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+          
+      <!-- Save Draft As Modal -->
+      <div id="saveAsModal" class="modal hidden">
+        <div class="modal-content card">
+          <h3>Name this draft</h3>
+          <label>Draft name
+            <input id="saveAsName" placeholder="e.g., Welcome flow — v2">
+          </label>
+          <div class="row">
+            <button id="saveAsConfirm">Save</button>
+            <button id="saveAsCancel" class="secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+
+    <!-- ========== INSPECTOR ========== -->
+    <aside class="inspector">
+      <h3>Inspector</h3>
+      <div id="inspectorEmpty" class="hint">Select a trigger/action/command to edit its settings.</div>
+      <div id="inspector"></div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Tokens</h4>
+        <div class="toolbar" style="gap:6px">
+          <select id="tokenPicker" style="flex:1">
+            <option value="">Insert token…</option>
+          </select>
+          <button class="secondary" id="insertToken">Insert</button>
+        </div>
+        <div class="hint" style="margin-top:6px">Inserts into the currently focused field in the Inspector.</div>
+      </div>
+    </aside>
+  
+  </div>
+
+
+
+    <!-- Toast stack -->
+    <div id="toastStack" style="position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:2000"></div>
+
+    <!-- Themed confirm/prompt modal -->
+    <div id="uiModal" class="modal hidden" style="z-index:2001">
+      <div class="modal-content card" style="width:440px">
+        <h3 id="uiModalTitle" style="margin:0 0 8px 0">Confirm</h3>
+        <div id="uiModalMsg" class="hint" style="margin-bottom:12px"></div>
+
+        <div id="uiModalInputWrap" style="display:none; margin-bottom:10px">
+          <input id="uiModalInput" placeholder="">
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end">
+          <button id="uiModalCancel" class="secondary">Cancel</button>
+          <button id="uiModalOK">OK</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== Drafts Page (keeps header; hides the rest) ===== -->
+    <div id="draftsPage" style="display:none; padding:18px; max-width:1100px; margin:0 auto">
+      <div class="topbar">
+        <h2>Drafts</h2>
+        <div style="display:flex; gap:8px; align-items:center">
+          <input id="draftSearch" placeholder="Search drafts…" style="width:260px; background:#0b1220; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 10px; color:var(--ink)">
+          <button class="secondary" id="backToDashboard">Back to dashboard</button>
+        </div>
+      </div>
+
+      <div id="draftsList"></div>
+    </div>
+
+
+  <script>
+
+
+    // Simple confirmation helper
+    function uiConfirm(msg) {
+      return new Promise((resolve) => {
+        if (confirm(msg)) resolve(true);
+        else resolve(false);
+      });
+    }
+
+
+
+    const API_FALLBACK = "http://localhost:8000"; // change if your backend runs elsewhere
+      const api =
+        location.protocol.startsWith("http")
+          ? location.origin
+          : (localStorage.getItem("api_base") || API_FALLBACK);
+
+      function setAuthUI(me) {
+        const loginBtn = document.getElementById('loginBtn');
+        const authBox  = document.getElementById('authBox');
+        const userName = document.getElementById('userName');
+        const userId   = document.getElementById('userId'); // optional in header
+        const avatar   = document.getElementById('userAvatar');
+
+        if (!me) {
+          if (loginBtn) loginBtn.style.display = '';
+          authBox?.classList.add('hidden');
+          return;
+        }
+        if (loginBtn) loginBtn.style.display = 'none';
+        authBox?.classList.remove('hidden');
+        if (userName) userName.textContent = me.global_name || me.username || 'You';
+        if (userId)   userId.textContent   = me.id;
+
+        if (avatar) {
+          if (me.avatar) {
+            const ext = me.avatar.startsWith('a_') ? 'gif' : 'png';
+            avatar.src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.${ext}?size=64`;
+          } else {
+            avatar.src = 'https://cdn.discordapp.com/embed/avatars/1.png';
+          }
+        }
+      }
+
+
+
+      // Debounced preview refresh
+      let __previewTimer = null;
+      function schedulePreviewDock(delay = 80){
+        if (typeof updatePreviewDock !== "function") return; // safety
+        clearTimeout(__previewTimer);
+        __previewTimer = setTimeout(() => {
+          if (!window.dockHidden) updatePreviewDock();
+        }, delay);
+      }
+
+
+      function setGuildsUI(guilds) {
+        window.currentGuilds = guilds;
+        const picker = document.getElementById('guildPicker');
+        const info   = document.getElementById('guildInfo');
+        picker.innerHTML = '';
+        updatePublishVisibility();       
+        if (!guilds || guilds.length === 0) {
+          picker.style.display = 'none';
+          info.textContent = 'No manageable guilds were found on your account.';
+          return;
+        }
+
+        guilds.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = g.name;
+          picker.appendChild(opt);
+        });
+
+        picker.style.display = '';
+        info.textContent = 'Select a guild to view flows and commands.';
+
+        const saved = localStorage.getItem('active_guild_id');
+        if (saved && guilds.find(x => x.id === saved)) picker.value = saved;
+        else localStorage.setItem('active_guild_id', picker.value);
+
+        picker.onchange = () => {
+          localStorage.setItem('active_guild_id', picker.value);
+          updatePublishVisibility();  
+          refreshAll();
+        };
+      }
+
+
+
+    /* ---------------- State ---------------- */
+    let flows = [];      // [{id,name,trigger,actions:[], enabled?}]
+    let commands = [];   // [{id,name,description,actions:[], enabled?}]
+    let activeTab = "flows";
+    let selection = null; // {kind:"flow|trigger|action|command|cmd_action", flowId, index?, id?}
+
+    const TOKENS = [
+      ["{now}","Current date/time (server timezone)"],
+      ["{guild_name}","Server name"],
+      ["{member_count}","Approx. member count"],
+      ["{user_mention}","Mention the user (member context)"],
+      ["{user_name}","User name (member context)"],
+      ["{user_discriminator}","#### (member context)"],
+      ["{user}","username#discriminator (member context)"],
+      ["{joined_at}","Join datetime (member context)"]
+    ];
+
+
+
+    // ---------------- Drafts: storage helpers ----------------
+    const DRAFTS_KEY = "fluxpilot_drafts";
+    const CURRENT_DRAFT_KEY = "fluxpilot_current_draft";
+
+    function getDraftsMap(){
+      return JSON.parse(localStorage.getItem(DRAFTS_KEY) || "{}");
+    }
+    function setDraftsMap(map){
+      localStorage.setItem(DRAFTS_KEY, JSON.stringify(map));
+    }
+    function listDrafts(){
+      const map = getDraftsMap();
+      return Object.values(map).sort((a,b)=> (b.saved_at||"").localeCompare(a.saved_at||""));
+    }
+    function saveDraftWithName(name){
+      if(!name) return false;
+      const map = getDraftsMap();
+      const payload = {
+        name,
+        saved_at: new Date().toISOString(),
+        data: {
+          flows: JSON.parse(JSON.stringify(flows || [])),
+          commands: JSON.parse(JSON.stringify(commands || [])),
+          // include secrets if you have a secrets array in scope; otherwise it will be undefined and safely ignored
+          secrets: (typeof window.secrets !== "undefined" ? JSON.parse(JSON.stringify(window.secrets || [])) : undefined)
+        }
+      };
+      map[name] = payload;
+      setDraftsMap(map);
+      localStorage.setItem(CURRENT_DRAFT_KEY, name);
+      return true;
+    }
+    function loadDraftByName(name){
+      const map = getDraftsMap();
+      const d = map[name];
+      if(!d) return false;
+
+      flows    = JSON.parse(JSON.stringify(d.data.flows    || []));
+      commands = JSON.parse(JSON.stringify(d.data.commands || []));
+      if (typeof window.secrets !== "undefined" && d.data.secrets) {
+        window.secrets = JSON.parse(JSON.stringify(d.data.secrets));
+      }
+      renderFlows?.();
+      renderCommands?.();
+      renderInspector?.();
+      schedulePreviewDock?.();
+      localStorage.setItem(CURRENT_DRAFT_KEY, name);
+      return true;
+    }
+    function deleteDraft(name){
+      const map = getDraftsMap();
+      delete map[name];
+      setDraftsMap(map);
+    }
+    function renameDraft(oldName, newName){
+      if(!newName || newName===oldName) return;
+      const map = getDraftsMap();
+      if(!map[oldName]) return;
+      const exists = !!map[newName];
+      if(exists) throw new Error("A draft with that name already exists.");
+      map[newName] = { ...map[oldName], name:newName, saved_at:new Date().toISOString() };
+      delete map[oldName];
+      setDraftsMap(map);
+      const cur = localStorage.getItem(CURRENT_DRAFT_KEY);
+      if (cur === oldName) localStorage.setItem(CURRENT_DRAFT_KEY, newName);
+    }
+
+    // ---------------- Drafts: UI glue ----------------
+    const appGrid = document.querySelector(".app");
+    const draftsPage = document.getElementById("draftsPage");
+    const draftsBtn = document.getElementById("draftsBtn");
+    const draftsMenu = document.getElementById("draftsMenu");
+    const draftSaveBtn = document.getElementById("draftSave");
+    const draftSaveAsBtn = document.getElementById("draftSaveAs");
+    const draftLoadBtn = document.getElementById("draftLoad");
+    const backBtn = document.getElementById("backToDashboard");
+
+    // Dropdown open/close
+    function toggleMenu(show){
+      if (!draftsMenu) return;
+      const hidden = draftsMenu.classList.contains("hidden");
+      if (show === true || (hidden && show === undefined)) draftsMenu.classList.remove("hidden");
+      else draftsMenu.classList.add("hidden");
+    }
+    draftsBtn?.addEventListener("click", (e)=> {
+      e.stopPropagation();
+      toggleMenu(true);
+    });
+    document.addEventListener("click", (e)=>{
+      if (!draftsMenu?.contains(e.target) && e.target !== draftsBtn) toggleMenu(false);
+    });
+
+    // Save draft (over existing name or asks for one)
+    draftSaveBtn?.addEventListener("click", ()=>{
+      toggleMenu(false);
+      const cur = localStorage.getItem(CURRENT_DRAFT_KEY);
+      if (cur) {
+        saveDraftWithName(cur);
+        uiToast(`Saved “${cur}”`, {title:'Draft saved'});
+      } else {
+        openSaveAsModal();
+      }
+    });
+
+    // Save draft as…
+    draftSaveAsBtn?.addEventListener("click", ()=>{
+      toggleMenu(false);
+      openSaveAsModal();
+    });
+
+    // Load draft → go to Drafts page
+    draftLoadBtn?.addEventListener("click", ()=>{
+      toggleMenu(false);
+      showDraftsPage();
+    });
+
+    // Back to dashboard
+    backBtn?.addEventListener("click", ()=>{
+      hideDraftsPage();
+    });
+
+    // ---------------- Save As Modal ----------------
+    const saveAsModal = document.getElementById("saveAsModal");
+    const saveAsName  = document.getElementById("saveAsName");
+    const saveAsConfirm = document.getElementById("saveAsConfirm");
+    const saveAsCancel  = document.getElementById("saveAsCancel");
+
+    function openSaveAsModal(){
+      saveAsName.value = localStorage.getItem(CURRENT_DRAFT_KEY) || "";
+      saveAsModal.classList.remove("hidden");
+      setTimeout(()=> saveAsName.focus(), 0);
+    }
+    function closeSaveAsModal(){
+      saveAsModal.classList.add("hidden");
+    }
+    saveAsCancel?.addEventListener("click", closeSaveAsModal);
+    saveAsConfirm?.addEventListener("click", ()=>{
+      const name = (saveAsName.value || "").trim();
+      if(!name) { uiToast("Please enter a name.", {kind:'warn', title:'Missing name'});}
+      if(saveDraftWithName(name)) {
+        uiToast(`Saved as “${name}”`, {title:'Draft saved'});
+        closeSaveAsModal();
+      }
+    });
+    saveAsName?.addEventListener("keydown",(e)=>{
+      if (e.key === "Enter") saveAsConfirm.click();
+      if (e.key === "Escape") closeSaveAsModal();
+    });
+
+    // ---------------- Drafts page rendering ----------------
+    const draftsList = document.getElementById("draftsList");
+    const draftSearch = document.getElementById("draftSearch");
+
+    function showDraftsPage(){
+      if (appGrid) appGrid.style.display = "none";
+      if (draftsPage) draftsPage.style.display = "";
+      renderDraftsList();
+    }
+    function hideDraftsPage(){
+      if (draftsPage) draftsPage.style.display = "none";
+      if (appGrid) appGrid.style.display = "";
+    }
+
+    function renderDraftsList(){
+      if (!draftsList) return;
+      draftsList.innerHTML = "";
+      const q = (draftSearch?.value || "").toLowerCase();
+      const items = listDrafts().filter(d => !q || d.name.toLowerCase().includes(q));
+
+      if (!items.length){
+        const empty = document.createElement("div");
+        empty.className = "card";
+        empty.style.padding = "14px";
+        empty.textContent = q ? "No drafts match your search." : "You don’t have any drafts yet.";
+        draftsList.appendChild(empty);
+        return;
+      }
+
+      items.forEach(d=>{
+        const row = document.createElement("div");
+        row.className = "card";
+        row.style.display = "flex";
+        row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
+        row.style.padding = "12px";
+        row.style.marginBottom = "10px";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div style="font-weight:600">${d.name}</div>
+          <div class="hint" style="font-size:12px">Saved ${new Date(d.saved_at).toLocaleString()}</div>`;
+
+        const right = document.createElement("div");
+        right.style.display = "flex";
+        right.style.gap = "8px";
+
+        const load = document.createElement("button");
+        load.textContent = "Load";
+        load.onclick = ()=>{
+          if (loadDraftByName(d.name)) {
+            hideDraftsPage();
+            uiToast(`Loaded “${d.name}”`, {title:"Draft loaded"});
+          } else {
+            uiToast("Failed to load draft.", {kind:'error', title:'Error'});
+          }
+        };
+
+        const rename = document.createElement("button");
+        rename.className = "secondary";
+        rename.textContent = "Rename";
+        rename.onclick = async ()=>{
+          const nn = await uiPrompt("New name:", "e.g. Welcome flow — v2", d.name);
+          if (!nn || nn.trim() === d.name) return;
+          try {
+            renameDraft(d.name, nn.trim());
+            uiToast(`Renamed to “${nn.trim()}”`, {title:"Draft updated"});
+            renderDraftsList();
+          } catch (e) {
+            uiToast(String(e), {kind:"error", title:"Rename failed"});
+          }
+        };
+
+        const del = document.createElement("button");
+        del.className = "warn";
+        del.textContent = "Delete";
+        del.onclick = async ()=>{
+          if (await uiConfirm(`Delete draft "${d.name}"?`, "Delete draft")) {
+            deleteDraft(d.name);
+            uiToast(`Deleted “${d.name}”`, {title:"Draft removed"});
+            renderDraftsList();
+          }
+        };
+
+        right.appendChild(load);
+        right.appendChild(rename);
+        right.appendChild(del);
+
+        row.appendChild(left);
+        row.appendChild(right);
+        draftsList.appendChild(row);
+      });
+    }
+
+    draftSearch?.addEventListener("input", renderDraftsList);
+
+    // Optional: ESC closes menus/modals
+    document.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape") {
+        toggleMenu(false);
+        if (!saveAsModal.classList.contains("hidden")) closeSaveAsModal();
+      }
+    });
+
+
+
+
+    // ==== TOOLBOX (reorganized) ====
+    const TOOLBOX = [
+      {
+        group: "Triggers",
+        items: [
+          { type:"member_join",     label:"Member Join",   icon:"🧑‍🍼", docs:"Runs when a new member joins." },
+          { type:"message_contains",label:"Message Contains", icon:"💬", docs:"Runs when a message includes a substring." },
+          { type:"message_regex",   label:"Message Regex", icon:"🔎", docs:"Runs when a message matches a regex pattern.", sample:{trigger:{type:"message_regex",pattern:"\\bhelp\\b",flags:"i"},steps:[{type:"send_message",channel:"#general",message_template:"How can I help, {author_mention}?"}]} },
+          { type:"reaction_add",    label:"Reaction Added", icon:"➕🙂", docs:"Runs when a reaction is added. Optional filter: emoji/message_id." },
+          { type:"reaction_remove", label:"Reaction Removed", icon:"➖🙂", docs:"Runs when a reaction is removed." },
+          { type:"role_added",      label:"Role Added", icon:"➕🎭", docs:"Runs when a member gains a role (optional role_id filter)." },
+          { type:"role_removed",    label:"Role Removed", icon:"➖🎭", docs:"Runs when a member loses a role (optional role_id filter)." },
+          { type:"channel_created", label:"Channel Created", icon:"📺", docs:"Runs when a new channel is created." },
+          { type:"thread_created",  label:"Thread Created", icon:"🧵", docs:"Runs when a new thread is created." },
+          { type:"schedule",        label:"Schedule", icon:"⏱", docs:"Runs on an interval (handled locally). Use Cron in Sprint F." }
+        ]
+      },
+      {
+        group: "Messaging",
+        items: [
+          { type:"send_message", label:"Send Message", icon:"✉️", docs:"Send a templated message to a channel." },
+          { type:"send_embed",   label:"Send Embed",   icon:"🖼", docs:"Send a simple embed with title/description." },
+          { type:"paginate",     label:"Paginated Response", icon:"📄", docs:"Send multi-page content with Prev/Next buttons. Provide pages[] or items_var." },
+          { type:"dm_user",      label:"DM User", icon:"📨", docs:"DM the triggering user or a specified user_id." },
+          { type:"upload_file",  label:"Upload File/Image", icon:"📎", docs:"Send a file by URL with optional caption." },
+          { type:"fetch_api",    label:"Fetch API", icon:"🌐", docs:"Call an HTTP API and render response." },
+          { type:"log",          label:"Log", icon:"📝", docs:"Write a line to the execution log." },
+          { type:"sleep",        label:"Delay", icon:"⏳", docs:"Wait N milliseconds before next step." }
+        ]
+      },
+      {
+        group: "Moderation & Roles",
+        items: [
+          { type:"role_add",    label:"Add Role", icon:"➕🎭", docs:"Add a role to a member." },
+          { type:"role_remove", label:"Remove Role", icon:"➖🎭", docs:"Remove a role from a member." },
+          { type:"timeout",     label:"Timeout", icon:"⏰", docs:"Timeout a member for N seconds." },
+          { type:"kick",        label:"Kick", icon:"👢", docs:"Kick a member." },
+          { type:"ban",         label:"Ban", icon:"🚫", docs:"Ban a member (optional delete_message_days)." },
+          { type:"reaction_roles", label:"Reaction Roles Panel", icon:"🧩", docs:"Post a message with reactions that grant/remove roles." }
+        ]
+      },
+      {
+        group: "Tickets & Interactions",
+        items: [
+          { type:"ticket_panel", label:"Ticket Panel", icon:"🎟", docs:"Post a 'Create Ticket' button; creates private channel and exports transcript on close." }
+        ]
+      },
+      {
+        group: "Logic",
+        items: [
+          { type:"set",      label:"Set Variable", icon:"🧩", docs:"Set ctx[key] = value." },
+          { type:"if",       label:"If / Else",    icon:"🔀", docs:"Run 'then' or 'else' based on an expression (e.g., ctx['member_count'] > 100)." },
+          { type:"for_each", label:"For Each",     icon:"🔁", docs:"Loop over a list; run steps with 'as' variable." },
+          { type:"steps",    label:"Nested Steps", icon:"📦", docs:"Run a nested steps block." }
+        ]
+      }
+    ];
+
+
+    /* ---------------- Helpers ---------------- */
+    
+
+    function updatePublishVisibility() {
+      const btn = document.getElementById('publishAllTop');
+      if (!btn) return;
+      const hasUser  = !!window.__me;
+      const hasGuild = !!localStorage.getItem('active_guild_id');
+      btn.style.display = (hasUser && hasGuild) ? '' : 'none';
+    }
+
+
+
+    // Auth/login buttons
+    document.getElementById('loginBtn')?.addEventListener('click', () => {
+      location.href = `${api}/auth/discord/login`;
+    });
+
+    // Logout (supports either the old button or the new text link)
+    const doLogout = async (e) => {
+      e?.preventDefault?.();
+      await fetch(`${api}/auth/logout`, { method: 'POST', credentials: 'include' });
+      localStorage.removeItem('active_guild_id');
+      location.reload();
+    };
+    document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+    document.getElementById('logoutLink')?.addEventListener('click', doLogout);
+
+
+    // On load: fetch /me, then /me/guilds, then load flows/commands for selected guild
+    (async function bootstrap(){
+    let me = null;
+    try {
+      me = (await getJSON(`${api}/me`)).user;
+    } catch (_) {}
+    window.__me = me;   
+
+    setAuthUI(me);
+    updatePublishVisibility();
+    if (!me) return;
+     
+    // Fetch guilds (show all during dev)
+    let raw = [];
+    try {
+      raw = await getJSON(`${api}/me/guilds`);
+    } catch (e) {
+      console.error("/me/guilds failed:", e);
+    }
+
+
+    // Login: attach to any element with id="loginBtn"
+    document.querySelectorAll('#loginBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // allow normal link navigation if JS fails; prevent and push if JS is live
+        e.preventDefault?.();
+        location.href = `${api}/auth/discord/login`;
+      });
+    });
+
+    const doLogout = async (e) => {
+      e?.preventDefault?.();
+      await fetch(`${api}/auth/logout`, { method: 'POST', credentials: 'include' });
+      localStorage.removeItem('active_guild_id');
+      location.reload();
+    };
+    document.getElementById('logoutBtn') ?.addEventListener('click', doLogout);
+    document.getElementById('logoutLink')?.addEventListener('click', doLogout);
+
+    // Publish
+    document.getElementById('publishAllTop')?.addEventListener('click', publishAll);
+    document.getElementById('publishAll')    ?.addEventListener('click', publishAll);
+
+
+
+    // Tabs: Flows / Commands / Secrets
+    (function(){
+      const tabs = document.querySelectorAll('.tabs .tab');
+      const sections = {
+        flows:    document.getElementById('flowsCanvas'),
+        commands: document.getElementById('commandsCanvas'),
+        secrets:  document.getElementById('secretsCanvas')
+      };
+
+      function show(which){
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === which));
+        Object.entries(sections).forEach(([k, el]) => el && (el.style.display = (k === which ? '' : 'none')));
+        window.activeTab = which;
+        if (typeof renderInspector === 'function') renderInspector();
+        if (typeof schedulePreviewDock === 'function') schedulePreviewDock();
+      }
+
+      tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+      // initial
+      show(window.activeTab || 'flows');
+    })();
+
+
+    function wireTabs(){
+      const tabs = Array.from(document.querySelectorAll('.tabs .tab'));
+      const sections = {
+        flows:    document.getElementById('flowsCanvas'),
+        commands: document.getElementById('commandsCanvas'),
+        secrets:  document.getElementById('secretsCanvas')
+      };
+
+      function show(which){
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === which));
+        Object.entries(sections).forEach(([k, el]) => {
+          if (!el) return;
+          el.style.display = (k === which) ? '' : 'none';
+        });
+        activeTab = which;
+        renderInspector?.();       // safe if you have it
+        schedulePreviewDock();     // keep preview in sync
+      }
+
+      tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+      // initial
+      const current = (tabs.find(t => t.classList.contains('active'))?.dataset.tab) || 'flows';
+      show(current);
+    }
+
+    document.addEventListener('DOMContentLoaded', wireTabs);
+
+
+    // Bottom preview drawer toggle (click the "Preview" handle")
+    (function(){
+      const d = document.getElementById('previewDock');
+      const handle = document.getElementById('dockHandle');
+      if (!d || !handle) return;
+
+      const collapsed = localStorage.getItem('drawer_collapsed') === '1';
+      d.classList.toggle('collapsed', collapsed);
+      window.dockHidden = collapsed;
+
+      // if it's open on first paint, render once
+      if (!collapsed) schedulePreviewDock(10);
+
+      handle.addEventListener('click', () => {
+        const nowCollapsed = d.classList.toggle('collapsed');
+        window.dockHidden = nowCollapsed;
+        localStorage.setItem('drawer_collapsed', nowCollapsed ? '1' : '0');
+        if (!nowCollapsed) schedulePreviewDock(10);   // refresh on open
+      });
+    })();
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1) Any typing/selecting in the Inspector should refresh the preview
+      const inspector = document.getElementById("inspector") || document.querySelector(".inspector");
+      if (inspector){
+        inspector.addEventListener("input",  schedulePreviewDock, true);
+        inspector.addEventListener("change", schedulePreviewDock, true);
+      }
+
+      // 2) Clicks inside the canvases (selecting a step/node/etc.)
+      const flows     = document.getElementById("flowsCanvas");
+      const commands  = document.getElementById("commandsCanvas");
+      [flows, commands].forEach(el => {
+        if (!el) return;
+        el.addEventListener("click", () => schedulePreviewDock(20), true);
+      });
+
+      // 3) Tab switches (Flows / Commands / Secrets)
+      const tabs = document.querySelectorAll(".tabs .tab");
+      tabs.forEach(t => t.addEventListener("click", () => schedulePreviewDock(20)));
+
+      // 4) Observe structural changes that code does (rendering a new node, etc.)
+      const observe = (el) => {
+        if (!el) return;
+        const mo = new MutationObserver(() => schedulePreviewDock(30));
+        mo.observe(el, { childList: true, subtree: true, attributes: true, characterData: true });
+      };
+      observe(inspector);
+      observe(flows);
+      observe(commands);
+    });
+
+
+    /* ========= Themed UI: toast / confirm / prompt ========= */
+    function uiToast(text, opts = {}) {
+      const stack = document.getElementById('toastStack');
+      const node = document.createElement('div');
+      node.className = `toast ${opts.kind || 'ok'}`;
+      node.innerHTML = `<div class="title">${opts.title || 'Notice'}</div><div>${text}</div>`;
+      stack.appendChild(node);
+
+      // auto-dismiss
+      const ms = opts.duration ?? 2200;
+      setTimeout(() => {
+        node.style.transition = 'opacity .25s ease, transform .25s ease';
+        node.style.opacity = '0';
+        node.style.transform = 'translateY(6px)';
+        setTimeout(() => node.remove(), 260);
+      }, ms);
+    }
+
+    function uiModalCore({title, message, mode='confirm', placeholder='', initial=''}) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('uiModal');
+        const ttl   = document.getElementById('uiModalTitle');
+        const msg   = document.getElementById('uiModalMsg');
+        const wrap  = document.getElementById('uiModalInputWrap');
+        const input = document.getElementById('uiModalInput');
+        const ok    = document.getElementById('uiModalOK');
+        const cancel= document.getElementById('uiModalCancel');
+
+        ttl.textContent = title || (mode === 'prompt' ? 'Input' : 'Confirm');
+        msg.textContent = message || '';
+        wrap.style.display = (mode === 'prompt') ? '' : 'none';
+        input.value = initial || '';
+        input.placeholder = placeholder || '';
+        modal.classList.remove('hidden');
+
+        const cleanup = (val, okPressed) => {
+          modal.classList.add('hidden');
+          ok.onclick = cancel.onclick = null;
+          document.removeEventListener('keydown', onKey);
+          resolve(okPressed ? val : null);
+        };
+
+        ok.onclick = () => cleanup(mode === 'prompt' ? input.value : true, true);
+        cancel.onclick = () => cleanup(null, false);
+
+        function onKey(e){
+          if (e.key === 'Escape') cleanup(null, false);
+          if (e.key === 'Enter')  ok.click();
+        }
+        document.addEventListener('keydown', onKey);
+        if (mode === 'prompt') setTimeout(()=>input.focus(), 10);
+      });
+    }
+
+    function uiConfirm(message, title='Confirm') {
+      return uiModalCore({ title, message, mode: 'confirm' }).then(v => v === true);
+    }
+    function uiPrompt(message, placeholder='', initial='') {
+      return uiModalCore({ title: 'Input', message, mode:'prompt', placeholder, initial });
+    }
+
+    /* ========= Replace old alert/confirm/prompt usages ========= */
+    /* Examples below show how to swap your current calls: */
+
+    // 1) Publish success/failure (you call alert in your publish flow)
+    async function publishAll(){
+      const gid = activeGuildId();
+      if (!gid) { uiToast("Pick a guild first.", {kind:'warn', title:'Missing guild'}); return; }
+      try {
+        await saveFlows();
+        await saveCommands();
+        uiToast("Your bot has been updated automatically.", {title: "Published"});
+      } catch (e) {
+        uiToast(e.message || String(e), {kind:'error', title:'Publish failed', duration: 4000});
+      }
+    }
+    // If your file already defines publishAll, replace that body the same way.
+    // Your header hook already wires Publish → publishAll in the latest file .
+
+    // 2) Drafts “Delete?”
+    // Before: if (confirm(`Delete draft "${name}"?`)) { ... }
+    async function confirmDeleteDraft(name, doDelete){
+      if (await uiConfirm(`Delete draft "${name}"?`, "Delete draft")) {
+        doDelete();
+        uiToast(`Deleted "${name}"`, {title:"Draft removed"});
+      }
+    }
+
+    // 3) Drafts “Rename”
+    // Before: const nn = prompt("New name:", d.name);
+    async function promptRenameDraft(oldName, doRename){
+      const nn = await uiPrompt("New name:", "e.g. Welcome flow — v2", oldName);
+      if (!nn || nn.trim() === oldName) return;
+      try {
+        doRename(nn.trim());
+        uiToast(`Renamed to “${nn.trim()}”`, {title:"Draft updated"});
+      } catch (e) {
+        uiToast(String(e), {kind:"error", title:"Rename failed"});
+      }
+    }
+
+
+    // === HARD FAILS → console + on-screen toast ===
+    window.addEventListener('error', (e) => {
+      console.group('%c🔥 JS Error', 'color:#ef4444;font-weight:700');
+      console.error(e.error || e.message, e.filename, e.lineno, e.colno);
+      console.groupEnd();
+      try { uiToast(String(e.error?.message || e.message || 'JS error'), { kind:'error', title:'Error' }); } catch {}
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      console.group('%c🚨 Unhandled Promise Rejection', 'color:#ef4444;font-weight:700');
+      console.error(e.reason);
+      console.groupEnd();
+      try { uiToast(String(e.reason), { kind:'error', title:'Promise rejected' }); } catch {}
+    });
+
+
+
+    async function _readBodySafe(res) {
+    
+      const text = await res.text().catch(() => '');
+      try { return JSON.parse(text); } catch { return text; }
+    }
+
+    async function getJSON(url, opts = {}) {
+      try {
+        const r = await fetch(url, { credentials: 'include', ...opts });
+        if (!r.ok) {
+          const text = await r.text();
+          console.error("getJSON failed:", url, r.status, text);
+          throw new Error(text);
+        }
+        return await r.json();
+      } catch (err) {
+        console.error("getJSON error:", url, err);
+        throw err;
+      }
+    }
+
+
+    async function postJSON(url, body, opts={}) {
+      console.log('🌐 POST', url, body, opts);
+      const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type':'application/json', ...(opts.headers||{}) },
+        body: JSON.stringify(body ?? {}),
+        ...opts
+      });
+      const data = await _readBodySafe(res);
+      if (!res.ok) {
+        console.error('POST failed', res.status, data);
+        try { uiToast(`POST ${res.status}: ${url}`, { kind:'error', title:'Network error' }); } catch {}
+        throw new Error(`POST ${res.status} ${url}\n${typeof data === 'string' ? data : JSON.stringify(data)}`);
+      }
+      return (typeof data === 'string') ? { raw: data } : data;
+    }
+
+  
+    setInterval(() => {
+      const d = document.getElementById('previewDock');
+      if (!d) return;
+      const pe = getComputedStyle(d).pointerEvents;
+      const isCollapsed = d.classList.contains('collapsed');
+      if (pe !== (isCollapsed ? 'auto' : 'auto')) {
+        console.log('🔧 Normalizing previewDock pointer-events');
+        d.style.pointerEvents = isCollapsed ? 'none' : 'auto';
+      }
+    }, 1500);
+
+
+
+
+    // === HIT TEST: what is truly on top under your cursor? ===
+    document.addEventListener('pointerdown', (e) => {
+      const topEl = document.elementFromPoint(e.clientX, e.clientY);
+      console.group('%c🧪 Hit Test', 'color:#22d3ee;font-weight:700');
+      console.log('elementFromPoint:', topEl);
+      console.log('pointer-events of topEl:', getComputedStyle(topEl || document.body).pointerEvents);
+      console.groupEnd();
+    }, true);
+
+
+    function onClick(id, handler, opts) {
+      const el = document.getElementById(id);
+      if (!el) {
+        console.warn(`⚠️ onClick("${id}") → element not found`);
+        try { uiToast(`Missing element: #${id}`, { kind:'warn', title:'Hook skipped' }); } catch {}
+        return;
+      }
+      el.addEventListener('click', async (evt) => {
+        console.log(`▶️ ${id} clicked`, evt);
+        try {
+          await handler(evt);
+        } catch (err) {
+          console.error(`❌ Handler for #${id} threw`, err);
+          try { uiToast(String(err?.message || err), { kind:'error', title:`${id} failed` }); } catch {}
+        }
+      }, opts || false);
+    }
+
+
+
+    // Support both shapes: array OR { guilds: [...] }
+    const guilds = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.guilds) ? raw.guilds : []);
+
+    console.log("bootstrap: guilds =", guilds); // debug
+    setGuildsUI(guilds);
+
+    refreshAll();
+  })();
+
+
+    function activeGuildId() {
+      return localStorage.getItem('active_guild_id') || '';
+    }
+    function guildPath(p) {
+      const gid = activeGuildId();
+      if (!gid) { alert("Pick a guild (top of the page) first."); throw new Error("No guild"); }
+      return `/guilds/${gid}${p}`;
+    }
+
+
+    // Safety shims so UI stays interactive even if the engine hasn’t been wired yet.
+    window.saveFlows     = window.saveFlows     || (async () => {});
+    window.saveCommands  = window.saveCommands  || (async () => {});
+    window.loadFlows     = window.loadFlows     || (async () => { window.flows = window.flows || []; window.renderFlows?.(); });
+    window.loadCommands  = window.loadCommands  || (async () => { window.commands = window.commands || []; window.renderCommands?.(); });
+
+
+
+    async function refreshAll(){
+      try {
+        await Promise.all([loadFlows(), loadCommands()]);
+      } catch (e) {
+        console.warn("refreshAll failed:", e);
+      }
+      schedulePreviewDock();
+    }
+
+
+
+
+    function uid(){ return Math.random().toString(36).slice(2,9); }
+
+    
+   
+    
+
+    document.getElementById("toolSearch").addEventListener("input", renderToolbox);
+    // QoL: focus toolbox search with "/"
+    document.addEventListener("keydown", e=>{
+      if(e.key === "/" && document.activeElement.tagName!=="INPUT" && document.activeElement.tagName!=="TEXTAREA"){
+        e.preventDefault();
+        document.getElementById("toolSearch").focus();
+      }
+    });
+
+    renderToolbox(); // initial render
+  
+    function renderToolbox(){
+      const host = document.getElementById("toolbox");
+      host.innerHTML = "";
+
+      const q = (document.getElementById("toolSearch").value || "").toLowerCase();
+
+      // flatten items but keep group info for color dots
+      const all = TOOLBOX.flatMap(group =>
+        group.items.map(it => ({...it, _group: group.group}))
+      ).filter(it => {
+        const hay = `${it._group} ${it.label||""} ${it.docs||""} ${it.type||""}`.toLowerCase();
+        return !q || hay.includes(q);
+      });
+
+      // empty state
+      if (!all.length){
+        const d = document.createElement("div");
+        d.className = "hint";
+        d.style.padding = "8px";
+        d.textContent = q ? "No tools match your search." : "No tools available.";
+        host.appendChild(d);
+        return;
+      }
+
+      // grid container
+      const grid = document.createElement("div");
+      grid.className = "toolgrid";
+
+      all.forEach(it => {
+        // build drag payload (same shape you already use)
+        const payload = {
+          type: (["Triggers"].includes(it._group) ? "trigger" : "action"),
+          data: { type: it.type }
+        };
+
+        const card = document.createElement("div");
+        card.className = "tool-pill";
+        card.setAttribute("data-group", it._group);
+        card.draggable = true;
+        card.addEventListener("dragstart", ev => {
+          ev.dataTransfer.setData("text/plain", JSON.stringify(payload));
+          ev.dataTransfer.effectAllowed = "copy";
+        });
+
+        // title row
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = it.label || it.type;
+
+        // tags (short, visual hints instead of long docs)
+        const tags = document.createElement("div");
+        tags.className = "tags";
+        const short = [];
+        if (it._group === "Triggers") short.push("trigger", "event");
+        if (it._group === "Messaging") short.push("message", "embed");
+        if (it._group === "Moderation & Roles") short.push("roles", "mod");
+        if (it._group === "Tickets & Interactions") short.push("ticket", "ui");
+        if (it._group === "Logic") short.push("logic", "flow");
+
+        short.forEach(s => {
+          const t = document.createElement("span");
+          t.className = "tag";
+          t.textContent = s;
+          tags.appendChild(t);
+        });
+
+        // tiny note (one-liner from docs)
+        const note = document.createElement("div");
+        note.className = "note";
+        note.textContent = (it.docs || "").replace(/\.+$/,"");
+
+        // action row
+        const row = document.createElement("div");
+        row.className = "row";
+        const gLabel = document.createElement("div");
+        gLabel.className = "hint";
+        gLabel.textContent = it._group;
+        const addBtn = document.createElement("button");
+        addBtn.className = "add";
+        addBtn.textContent = "Add";
+        addBtn.onclick = () => addFromTool(payload);
+        row.appendChild(gLabel);
+        row.appendChild(addBtn);
+
+        card.appendChild(title);
+        card.appendChild(tags);
+        card.appendChild(note);
+        card.appendChild(row);
+        grid.appendChild(card);
+      });
+
+      host.appendChild(grid);
+    }
+
+
+
+
+
+
+      // --- JSON helpers
+      function parseJSONSafe(s, fallback) {
+        try { return s ? JSON.parse(s) : fallback; } catch { return fallback; }
+      }
+
+      // Very small JSONPath-ish (dot + [index]) for simple paths: "data.items[0].name"
+      function jsonPathLite(obj, path) {
+        if (!path) return obj;
+        try {
+          return path
+            .replace(/\[(\d+)\]/g, '.$1')       // [0] -> .0
+            .split('.')
+            .filter(Boolean)
+            .reduce((acc, key) => (acc == null ? undefined : acc[key]), obj);
+        } catch { return undefined; }
+      }
+
+      // Render utilities used by preview
+      function toListRows(arr, keys, rowTpl) {
+        const k = keys?.length ? keys : null;
+        return arr.map(item => {
+          if (rowTpl) {
+            // {name} — {uuid}
+            return rowTpl.replace(/\{(\w+)\}/g, (_, m) => item?.[m] ?? '');
+          }
+          if (k) return k.map(x => String(item?.[x] ?? '')).filter(Boolean).join(' — ');
+          return typeof item === 'object' ? JSON.stringify(item) : String(item);
+        });
+      }
+
+    let dockHidden = false;
+    function getCurrentPreviewTarget(){
+      // Priority: selected action/command action → first action of selected command/flow → first available
+      if (selection?.kind === "action") {
+        const f = flows.find(x=>x.id===selection.flowId);
+        if (f) return { kind: f.actions[selection.index]?.type, payload: f.actions[selection.index] };
+      }
+      if (selection?.kind === "cmd_action") {
+        const c = commands.find(x=>x.id===selection.id);
+        if (c) return { kind: c.actions[selection.index]?.type, payload: c.actions[selection.index] };
+      }
+      if (selection?.kind === "command") {
+        const c = commands.find(x=>x.id===selection.id);
+        if (c && c.actions[0]) return { kind: c.actions[0].type, payload: c.actions[0] };
+      }
+      if (selection?.kind === "trigger") {
+        const f = flows.find(x=>x.id===selection.flowId);
+        if (f && f.actions[0]) return { kind: f.actions[0].type, payload: f.actions[0] };
+      }
+      // fallbacks
+      if (commands[0]?.actions[0]) return { kind: commands[0].actions[0].type, payload: commands[0].actions[0] };
+      if (flows[0]?.actions[0])    return { kind: flows[0].actions[0].type, payload: flows[0].actions[0] };
+      return { kind: "send_message", payload: { message_template: "👋 Start by selecting an action" } };
+    }
+
+
+    async function updatePreviewDock() {
+      if (dockHidden) return;
+      const host = document.getElementById("dockContent");
+      const { kind, payload } = getCurrentPreviewTarget();
+
+      // inside updatePreviewDock() after you compute `selection`
+      // and before the generic placeholder you had for steps
+      if (selection && (selection.kind === "action" || selection.kind === "cmd_action")) {
+        const lane = selection.kind === "action" ? flows.find(f=>f.id===selection.flowId)
+                                                : commands.find(c=>c.id===selection.id);
+        const act  = lane && lane.actions ? lane.actions[selection.index] : null;
+
+        if (act && act.type === "steps") {
+          const host = document.getElementById("dockContent");
+          host.innerHTML = `<div class="hint">Running steps preview…</div>`;
+
+          // POST to /preview/steps with the current step chain
+          fetch(`${api}/preview/steps`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ steps: act.steps || [] })
+          }).then(r => r.json()).then(res => {
+            if (!res.ok) {
+              host.innerHTML = `<div class="discord-msg">
+                <div class="discord-row"><div class="discord-avatar"></div>
+                <div class="discord-body">
+                  <div class="discord-header">
+                    <span class="discord-author">FluxPilot</span>
+                    <span class="discord-time">${(function(){let d=new Date(),h=d.getHours(),m=String(d.getMinutes()).padStart(2,"0"),ampm=h>=12?"PM":"AM";h=h%12; if(h===0)h=12; return h+":"+m+" "+ampm;})()}</span>
+                  </div>
+                  <div class="discord-content"><em>${res.error || "Preview failed"}</em></div>
+                </div></div></div>`;
+              return;
+            }
+            const text = (res.chunks || []).join("\n\n") || "_(no content)_";
+            host.innerHTML = `
+              <div class="discord-msg">
+                <div class="discord-row">
+                  <div class="discord-avatar"></div>
+                  <div class="discord-body">
+                    <div class="discord-header">
+                      <span class="discord-author">FluxPilot</span>
+                      <span class="discord-time">${new Date().toLocaleString()}</span>
+                    </div>
+                    <div class="discord-content">${text}</div>
+                  </div>
+                </div>
+              </div>`;
+          }).catch(e=>{
+            host.innerHTML = `<div class="hint">Preview error: ${e}</div>`;
+          });
+          return; // important: don’t fall through to other preview paths
+        }
+      }
+
+
+
+      // Simple actions: render immediately
+      if (kind !== "fetch_api") {
+        host.innerHTML = "";
+        renderDiscordPreviewTo(host, kind, payload || {});
+        return;
+      }
+
+      // ---- fetch_api: actually call the API through our backend proxy ----
+      const ctx = currentPreviewCtx();
+
+      // Resolve tokens first (URL, headers, params, body may include {tokens})
+      const method     = (payload.method || "GET").toUpperCase();
+      const url        = formatTemplate(payload.url || "", ctx);
+      const headersRaw = formatTemplate(payload.headers || "{}", ctx);
+      const paramsRaw  = formatTemplate(payload.params  || "{}", ctx);
+      const bodyRaw    = formatTemplate(payload.body    || "",   ctx);
+
+      const headers = parseJSONSafe(headersRaw, {});
+      const params  = parseJSONSafe(paramsRaw,  {});
+      const body    = bodyRaw ? parseJSONSafe(bodyRaw, bodyRaw) : null;
+
+      // Show a tiny spinner while loading
+      host.innerHTML = `<div class="discord-msg"><div class="discord-row">
+          <div class="discord-avatar"></div>
+          <div class="discord-body"><div class="discord-header">
+            <span class="discord-author">FluxPilot</span>
+            <span class="discord-time">${new Date().toLocaleString()}</span>
+          </div>
+          <div class="discord-content" style="opacity:.7">Fetching ${method} → ${url} …</div></div>
+        </div></div>`;
+
+      // Ask backend to fetch
+      let result;
+      try {
+        const gid = activeGuildId && activeGuildId();
+        const res = await fetch(`${api}/preview/fetch`, {
+          method: "POST",
+          credentials: "include",      // ← send your session cookie
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+            method, url, headers, params, body,
+            timeout_ms: payload.timeout_ms ?? 6000,
+            guild_id: (typeof activeGuildId === "function" ? activeGuildId() : localStorage.getItem('active_guild_id') || "")
+          })
+        });
+
+        result = await res.json();
+      } catch (e) {
+        result = { ok:false, error: String(e) };
+      }
+
+      // Prepare the same 'data' string your bot would place into {data}
+      let extracted = null;
+      if (result?.ok) {
+        const expectJson = (String(payload.expect_json ?? true).toLowerCase() === "true");
+        const base = (expectJson && result.json != null) ? result.json : (result.text ?? "");
+        const jpath = payload.json_path || "";
+
+        let value = base;
+        if (jpath && base && typeof base === "object") {
+          value = jsonPathLite(base, jpath);
+        }
+        // Render hint: list/table/json/auto
+        const style = (payload.render_style || "auto").toLowerCase();
+        const keys  = (payload.display_keys || "").split(",").map(s=>s.trim()).filter(Boolean);
+        const rowTpl = payload.row_template || "";
+
+        if (Array.isArray(value)) {
+          const rows = toListRows(value, keys, rowTpl);
+          extracted = rows.join("\n");
+        } else if (typeof value === "object") {
+          extracted = (style === "json" || style === "auto")
+            ? "```json\n" + JSON.stringify(value, null, 2) + "\n```"
+            : JSON.stringify(value);
+        } else {
+          extracted = String(value ?? "");
+        }
+      } else {
+        extracted = `Error: ${result?.error || "request failed"}`;
+      }
+
+      // Compose a fake action so the existing renderer shows it exactly
+      const mode = (payload.reply_mode || "message").toLowerCase();
+      const fakeAction = {
+        ...payload,
+        message_template: (payload.message_template || "{data}").replace("{data}", extracted),
+        embed_description: (payload.embed_description || "{data}").replace("{data}", extracted)
+      };
+
+      host.innerHTML = "";
+      renderDiscordPreviewTo(host, "fetch_api", fakeAction);
+    }
+
+
+
+
+    (function(){
+      const d = document.getElementById('previewDock');
+      const handle = document.getElementById('dockHandle');
+      if (!d || !handle) return;
+
+      // initial state from localStorage
+      const collapsed = localStorage.getItem('drawer_collapsed') === '1';
+      d.classList.toggle('collapsed', collapsed);
+      window.dockHidden = collapsed;
+
+      handle.addEventListener('click', () => {
+        const nowCollapsed = d.classList.toggle('collapsed');
+        window.dockHidden = nowCollapsed;
+        localStorage.setItem('drawer_collapsed', nowCollapsed ? '1' : '0');
+        if (!nowCollapsed) schedulePreviewDock(10);  // refresh when opening
+      });
+    })();
+
+
+
+
+    function addFromTool(tool){
+      if(activeTab==="flows"){
+        if(tool.type==="trigger") createFlow(tool.data);
+        else if(tool.type==="template") createFlow(null, tool.data);
+        else if(tool.type==="action") { const first = flows[0]; if(!first) { alert("Create a flow by dragging a Trigger first."); return; } first.actions.push({...tool.data}); selection={kind:"action", flowId:first.id, index:first.actions.length-1}; }
+        renderFlows();
+      } else {
+        if(tool.type==="template"){ // make command from first action
+          const t=tool.data; createCommand({name:t.trigger?.name||"new_command", description:t.trigger?.description||"From template", actions:t.actions||[]});
+        } else if(tool.type==="action"){ const first = commands[0]; if(!first){ createCommand({name:"hello", description:"Says hi", actions:[tool.data]}); } else { first.actions.push({...tool.data}); selection={kind:"cmd_action", id:first.id, index:first.actions.length-1}; } renderCommands(); }
+      }
+      renderInspector();
+      schedulePreviewDock();
+
+     
+
+    }
+
+   
+    // Apply sensible defaults so newly-added items "do something"
+    function applyDefaults(obj){
+      if(!obj || !obj.type) return obj;
+      switch(obj.type){
+
+        /* Triggers */
+        case "message_regex":
+          obj.pattern ??= "\\bhelp\\b";
+          obj.flags ??= "i";
+          break;
+        case "reaction_add":
+        case "reaction_remove":
+          obj.message_id ??= "";   // optional
+          obj.emoji ??= "";        // optional
+          break;
+        case "role_added":
+        case "role_removed":
+          obj.role_id ??= "";      // optional filter
+          break;
+        case "channel_created":
+        case "thread_created":
+          // no required fields
+          break;
+        case "schedule":
+          obj.interval_seconds ??= 60;
+          break;
+
+        /* Actions: Messaging */
+        case "send_message":
+          obj.channel ??= "#general";
+          obj.message_template ??= "Hello {user_mention}!";
+          break;
+        case "send_embed":
+          obj.channel ??= "#general";
+          obj.title ??= "Title";
+          obj.embed_description ??= "Description";
+          break;
+        case "paginate":
+          obj.channel ??= "#general";
+          obj.pages ??= ["Page 1","Page 2","Page 3"];
+          obj.embed ??= true;
+          break;
+        case "dm_user":
+          obj.user_id ??= ""; // blank → triggering user
+          obj.message_template ??= "Hey there {user_mention}!";
+          break;
+        case "upload_file":
+          obj.channel ??= "#general";
+          obj.url ??= "https://picsum.photos/800/400";
+          obj.filename ??= "image.jpg";
+          obj.content ??= "Here you go!";
+          break;
+
+        /* Actions: Roles & Mod */
+        case "role_add":
+        case "role_remove":
+          obj.user_id ??= "";   // blank → triggering user
+          obj.role_id ??= "";   // or set role_name instead
+          obj.role_name ??= "";
+          obj.reason ??= "";
+          break;
+        case "timeout":
+          obj.user_id ??= "";
+          obj.seconds ??= 600;
+          obj.reason ??= "Auto-timeout";
+          break;
+        case "kick":
+          obj.user_id ??= "";
+          obj.reason ??= "Flow kick";
+          break;
+        case "ban":
+          obj.user_id ??= "";
+          obj.reason ??= "Flow ban";
+          obj.delete_message_days ??= 0;
+          break;
+
+        /* Actions: Interaction systems */
+        case "reaction_roles":
+          obj.channel ??= "#roles";
+          obj.content ??= "React to get a role:";
+          obj.map ??= [
+            { emoji:"✅", role_id:"" },
+            { emoji:"🎮", role_id:"" }
+          ];
+          break;
+        case "ticket_panel":
+          obj.channel ??= "#support";
+          obj.content ??= "Need help? Click to create a private ticket.";
+          obj.staff_role_id ??= "";
+          obj.category_id ??= "";
+          obj.transcript_channel_id ??= "";
+          break;
+
+        /* Logic */
+        case "set":
+          obj.key ??= "key";
+          obj.value ??= "value";
+          break;
+        case "if":
+          obj.expr ??= "len(ctx.get('attachments',[]))>0";
+          obj.then ??= [];
+          obj.else ??= [];
+          break;
+        case "for_each":
+          obj.items ??= "attachments"; // can be array or ctx key
+          obj.as ??= "it";
+          obj.steps ??= [];
+          break;
+        case "steps":
+          obj.steps ??= [];
+          break;
+      }
+      return obj;
+    }
+
+
+
+    /* ---------------- Canvas: Flows ---------------- */
+    function createFlow(trigger=null, template=null){
+      if(template){ flows.push({ id:uid(), name: template.name || "New flow", trigger: template.trigger, actions: (template.actions||[]), enabled:true }); }
+      else flows.push({ id:uid(), name:"New flow", trigger: trigger, actions: [], enabled:true });
+      renderFlows();
+    }
+
+    function flowById(id){ return flows.find(f=>f.id===id); }
+
+    function renderFlows(){
+      const host = document.getElementById("flowsCanvas"); host.innerHTML="";
+      if(flows.length===0){
+        const empty = document.createElement("div");
+        empty.className="card"; empty.innerHTML = "<b>No flows yet.</b> Drag a <i>Trigger</i> from the toolbox to start.";
+        host.appendChild(empty);
+      }
+      flows.forEach(flow=>{
+        const lane = document.createElement("div"); lane.className="lane"; lane.dataset.flow = flow.id;
+
+        // header
+        const head = document.createElement("div"); head.className="lane-header";
+        head.innerHTML = `<div><b>${flow.name}</b> ${flow.enabled?"<span class='pill' style='background:#16a34a'>enabled</span>":"<span class='pill' style='background:#9ca3af'>off</span>"}</div><div class="toolbar"><label style='display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px'>Enabled <input type='checkbox' ${flow.enabled?"checked":""} /></label><button class="secondary" data-act="rename">Rename</button><button class="secondary" data-act="delete">Delete</button></div>`;
+        head.querySelector("input[type=checkbox]").onchange = (e)=>{ flow.enabled = !!e.target.checked; };
+        lane.appendChild(head);
+
+        // nodes row
+        const row = document.createElement("div"); row.className="nodes";
+        // Trigger node
+        const t = document.createElement("div"); t.className="node trigger"; t.innerHTML = `<span class="icon">⏱️</span><div><div class="title">${titleForTrigger(flow.trigger)}</div><div class="sub">${subForTrigger(flow.trigger)}</div></div>`;
+        t.onclick = ()=>{ selection={kind:"trigger", flowId:flow.id}; renderInspector(); };
+        row.appendChild(t);
+
+        // add gap to drop actions before first
+        row.appendChild(gap(flow.id, 0));
+
+        // action nodes
+        flow.actions.forEach((a, idx)=>{
+          const n = document.createElement("div"); n.className="node action";
+          n.innerHTML = `<span class="icon">➡️</span><div><div class="title">${a.type}</div><div class="sub">${subForAction(a)}</div></div><span class="x" title="Remove">✕</span>`;
+          n.onclick = (ev)=>{ if(ev.target.classList.contains("x")){ flow.actions.splice(idx,1); renderFlows(); renderInspector(); } else { selection={kind:"action", flowId:flow.id, index:idx}; renderInspector(); } };
+          // draggable reorder
+          n.draggable=true;
+          n.addEventListener("dragstart",(ev)=>{ ev.dataTransfer.setData("text/plain", JSON.stringify({reorder:true, flowId:flow.id, index:idx})); });
+          row.appendChild(n);
+          row.appendChild(gap(flow.id, idx+1));
+        });
+
+        // allow dropping a trigger here to replace
+        lane.addEventListener("dragover",ev=>{ ev.preventDefault(); if(isTool(ev,"trigger")||isTool(ev,"template")) lane.classList.add("dropping"); });
+        lane.addEventListener("dragleave",()=>lane.classList.remove("dropping"));
+        lane.addEventListener("drop",ev=>{
+          ev.preventDefault(); lane.classList.remove("dropping");
+          const data = JSON.parse(ev.dataTransfer.getData("text/plain") || "{}");
+          if(data.reorder){ /* ignore */ return; }
+          if(data.type==="trigger"){ flow.trigger = data.data; renderFlows(); }
+          if(data.type==="template"){ Object.assign(flow, {name:data.data.name||flow.name, trigger:data.data.trigger, actions:data.data.actions||[]}); renderFlows(); }
+        });
+
+        lane.querySelector('[data-act="rename"]').onclick = ()=>{ const v = prompt("Flow name", flow.name||""); if(v!==null){ flow.name=v.trim(); renderFlows(); } };
+        lane.querySelector('[data-act="delete"]').onclick = ()=>{ flows = flows.filter(f=>f.id!==flow.id); renderFlows(); renderInspector(); };
+
+        lane.appendChild(row);
+        host.appendChild(lane);
+      });
+
+      // Canvas drop to create new flows by dropping a trigger/template on empty area
+      host.addEventListener("dragover",ev=>{ ev.preventDefault(); host.classList.add("dropping"); });
+      host.addEventListener("dragleave",()=>host.classList.remove("dropping"));
+      host.addEventListener("drop",ev=>{
+        ev.preventDefault(); host.classList.remove("dropping");
+        const data = JSON.parse(ev.dataTransfer.getData("text/plain")||"{}");
+        if(data.type==="trigger"){ createFlow(applyDefaults(data.data)); }
+        if(data.type==="template") createFlow(null,data.data);
+      });
+
+      schedulePreviewDock();
+
+    }
+
+    function isTool(ev, kind){ try{ const d=JSON.parse(ev.dataTransfer.getData("text/plain")||"{}"); return d.type===kind; }catch{return false;} }
+
+    function gap(flowId, index){
+      const g = document.createElement("div"); g.className="add-gap"; g.textContent="+ Drop action here";
+      g.addEventListener("dragover",(ev)=>{ ev.preventDefault(); g.classList.add("dropping"); });
+      g.addEventListener("dragleave",()=>g.classList.remove("dropping"));
+      g.addEventListener("drop",(ev)=>{
+        ev.preventDefault(); g.classList.remove("dropping");
+        const data = JSON.parse(ev.dataTransfer.getData("text/plain")||"{}");
+        const flow = flowById(flowId);
+        if(data.reorder && data.flowId===flowId){
+          const a = flow.actions.splice(data.index,1)[0];
+          const insert = index > data.index ? index-1 : index;
+          flow.actions.splice(insert,0,a);
+        } else if(data.type==="action"){
+          flow.actions.splice(index,0, {...data.data});
+        }
+        renderFlows(); renderInspector();
+      });
+      return g;
+    }
+
+    function titleForTrigger(tr){
+      if(!tr) return "No trigger";
+      const t = tr.type;
+      if(t==="schedule") return "Schedule";
+      if(t==="member_join") return "Member join";
+      if(t==="message_contains") return "Message contains";
+      if(t==="slash_command") return `/${tr.name||"command"}`;
+      return t;
+    }
+    function subForTrigger(tr){
+      if(!tr) return "";
+      const t=tr.type;
+      if(t==="schedule") return `every ${tr.interval_seconds||0}s`;
+      if(t==="message_contains") return `"${tr.text||""}"`;
+      if(t==="slash_command") return tr.description||"";
+      return "";
+    }
+    function subForAction(a){
+      if(a.type==="send_message") return `${a.channel||"#"} • ${(a.message_template||"").slice(0,40)}`;
+      if(a.type==="send_embed") return `${a.channel||"#"} • ${(a.title||"")} `;
+      if(a.type==="sleep") return `${a.seconds||1}s`;
+      if(a.type==="log") return (a.message||"").slice(0,40);
+      if(a.type==="fetch_api") return `${(a.method||"GET")} ${(a.url||"").slice(0,40)}`;
+      if(a.type==="steps") return `${(a.steps||[]).length||0} steps`;
+      return "";
+    }
+
+    /* ---------------- Canvas: Commands ---------------- */
+    function createCommand(partial){
+      commands.push({ id:uid(), name: partial?.name||"new_command", description: partial?.description||"Custom command", actions: partial?.actions||[], enabled:true });
+      renderCommands();
+    }
+
+    function renderCommands(){
+      const host = document.getElementById("commandsCanvas"); host.innerHTML="";
+      if(commands.length===0){
+        const empty = document.createElement("div"); empty.className="card";
+        empty.innerHTML = "<b>No commands yet.</b> Drag an <i>Action</i> here or click “Add command” below.";
+        host.appendChild(empty);
+      }
+      commands.forEach(cmd=>{
+        const card = document.createElement("div"); card.className="lane";
+        const head = document.createElement("div"); head.className="lane-header";
+        head.innerHTML = `<div><b>/${cmd.name}</b> — <span class="hint">${cmd.description||""}</span> ${cmd.enabled?"<span class='pill' style='background:#16a34a'>enabled</span>":"<span class='pill' style='background:#9ca3af'>off</span>"}</div>
+                          <div class="toolbar">
+                            <label style='display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px'>Enabled <input type='checkbox' ${cmd.enabled?"checked":""} /></label>
+                            <button class="secondary" data-act="edit">Edit</button>
+                            <button class="secondary" data-act="delete">Delete</button>
+                          </div>`;
+        head.querySelector("input[type=checkbox]").onchange = (e)=>{ cmd.enabled = !!e.target.checked; };
+        head.querySelector('[data-act="edit"]').onclick = ()=>{ selection={kind:"command", id:cmd.id}; renderInspector(); };
+        head.querySelector('[data-act="delete"]').onclick = ()=>{ commands = commands.filter(c=>c.id!==cmd.id); renderCommands(); renderInspector(); };
+        card.appendChild(head);
+
+        const row = document.createElement("div"); row.className="nodes";
+        row.appendChild(gapCmd(cmd.id, 0));
+        cmd.actions.forEach((a, idx)=>{
+          const n = document.createElement("div"); n.className="node action";
+          n.innerHTML = `<span class="icon">🎯</span><div><div class="title">${a.type}</div><div class="sub">${subForAction(a)}</div></div><span class="x">✕</span>`;
+          n.onclick = (ev)=>{ if(ev.target.classList.contains("x")){ cmd.actions.splice(idx,1); renderCommands(); renderInspector(); } else { selection={kind:"cmd_action", id:cmd.id, index:idx}; renderInspector(); } };
+          n.draggable=true;
+          n.addEventListener("dragstart",(ev)=>{ ev.dataTransfer.setData("text/plain", JSON.stringify({reorder:true, cmdId:cmd.id, index:idx})); });
+          row.appendChild(n);
+          row.appendChild(gapCmd(cmd.id, idx+1));
+        });
+
+        // drop actions/template here
+        card.addEventListener("dragover",ev=>{ ev.preventDefault(); card.classList.add("dropping"); });
+        card.addEventListener("dragleave",()=>card.classList.remove("dropping"));
+        card.addEventListener("drop",ev=>{
+          ev.preventDefault(); card.classList.remove("dropping");
+          const d = JSON.parse(ev.dataTransfer.getData("text/plain")||"{}");
+          if(d.type==="action"){ cmd.actions.push({...d.data}); renderCommands(); }
+          if(d.type==="template"){ cmd.actions = d.data.actions||[]; renderCommands(); }
+        });
+
+        card.appendChild(row);
+        host.appendChild(card);
+      });
+
+      const add = document.createElement("div"); add.className="toolbar"; add.style.marginTop="8px";
+      const btn = document.createElement("button"); btn.textContent="Add command";
+      btn.onclick=()=>createCommand({name:"hello", description:"Say hi", actions:[{type:"send_message", channel:"general", message_template:"👋 Hey {user_mention}! It's {now}."}]});
+      add.appendChild(btn); host.appendChild(add);
+
+      schedulePreviewDock();
+
+    }
+
+    function gapCmd(cmdId, index){
+      const g = document.createElement("div"); g.className="add-gap"; g.textContent="+ Drop action";
+      g.addEventListener("dragover",(ev)=>{ ev.preventDefault(); g.classList.add("dropping"); });
+      g.addEventListener("dragleave",()=>g.classList.remove("dropping"));
+      g.addEventListener("drop",(ev)=>{
+        ev.preventDefault(); g.classList.remove("dropping");
+        const d = JSON.parse(ev.dataTransfer.getData("text/plain")||"{}");
+        const cmd = commands.find(c=>c.id===cmdId);
+        if(d.reorder && d.cmdId===cmdId){
+          const a = cmd.actions.splice(d.index,1)[0];
+          const insert = index > d.index ? index-1 : index;
+          cmd.actions.splice(insert,0,a);
+        } else if(d.type==="action"){
+          cmd.actions.splice(index,0,{...d.data});
+        }
+        renderCommands(); renderInspector();
+        schedulePreviewDock(10);
+
+      });
+      return g;
+    }
+
+    /* ---------------- Inspector ---------------- */
+
+    
+
+    function clearInspector(){
+      const insp  = document.getElementById("inspector");
+      const inspEmpty = document.getElementById("inspectorEmpty");
+      insp.innerHTML = "";
+      inspEmpty.style.display = "block";
+    }
+
+
+
+    function renderInspector(){
+      const insp  = document.getElementById("inspector");
+      const empty = document.getElementById("inspectorEmpty");
+      insp.innerHTML = "";
+      empty.style.display = selection ? "none" : "";
+      if(!selection) return;
+
+      // ---------- Small UI helpers ----------
+      const fld = (label, el) => {
+        const w = document.createElement("div"); w.className="card";
+        const L = document.createElement("label"); L.textContent = label;
+        w.appendChild(L); w.appendChild(el); return w;
+      };
+      const input = (val, on) => {
+        const el = document.createElement("input"); el.value = val ?? "";
+        el.oninput = e => on(e.target.value); return el;
+      };
+      const number = (val, on) => {
+        const el = document.createElement("input"); el.type="number"; el.value = (val ?? "");
+        el.oninput = e => on(Number(e.target.value||0)); return el;
+      };
+      const checkbox = (val, on) => {
+        const el = document.createElement("input"); el.type="checkbox"; el.checked = !!val;
+        el.onchange = e => on(!!e.target.checked); return el;
+      };
+      const textarea = (val, on) => {
+        const el = document.createElement("textarea");
+        el.value = (typeof val === "string") ? val : JSON.stringify(val, null, 2);
+        el.oninput = e => on(e.target.value); return el;
+      };
+      const jsonarea = (val, on) => {
+        const el = document.createElement("textarea");
+        el.value = JSON.stringify(val ?? {}, null, 2);
+        el.oninput = e => {
+          try { on(JSON.parse(e.target.value||"{}")); el.style.borderColor=""; }
+          catch { el.style.borderColor = "#f59e0b"; }
+        };
+        return el;
+      };
+      const arrarea = (val, on) => {
+        const el = document.createElement("textarea");
+        el.value = JSON.stringify(val ?? [], null, 2);
+        el.oninput = e => {
+          try { on(JSON.parse(e.target.value||"[]")); el.style.borderColor=""; }
+          catch { el.style.borderColor = "#f59e0b"; }
+        };
+        return el;
+      };
+
+      // ---------- Resolve selected object ----------
+      let obj=null, context="";
+      if(selection.kind==="trigger"){
+        const f = flows.find(x=>x.id===selection.flowId);
+        obj = f?.trigger; context="trigger";
+        obj && applyDefaults(obj);
+        const h = document.createElement("h3"); h.textContent = `Trigger: ${obj?.type||"—"}`; insp.appendChild(h);
+      }
+      else if(selection.kind==="action"){
+        const f = flows.find(x=>x.id===selection.flowId);
+        obj = f?.actions?.[selection.index]; context="action";
+        obj && applyDefaults(obj);
+        const h = document.createElement("h3"); h.textContent = `Action: ${obj?.type||"—"}`; insp.appendChild(h);
+      }
+      else if(selection.kind==="command"){
+        const c = commands.find(x=>x.id===selection.id);
+        obj = c; context="command";
+        const h = document.createElement("h3"); h.textContent = `Command: /${obj?.name||"new"}`; insp.appendChild(h);
+        insp.appendChild(fld("Name", input(obj.name, v=>{ obj.name=v; renderCommands(); schedulePreviewDock(); })));
+        insp.appendChild(fld("Description", input(obj.description, v=>{ obj.description=v; renderCommands(); })));
+        schedulePreviewDock();
+        return;
+      }
+      else if(selection.kind==="cmd_action"){
+        const c = commands.find(x=>x.id===selection.id);
+        obj = c?.actions?.[selection.index]; context="cmd_action";
+        obj && applyDefaults(obj);
+        const h = document.createElement("h3"); h.textContent = `Command Action: ${obj?.type||"—"}`; insp.appendChild(h);
+      }
+
+      if(!obj){ insp.innerHTML = "<div class='hint'>Nothing selected.</div>"; return; }
+
+      // ---------- Per-type editors ----------
+      const t = (obj.type||"").toLowerCase();
+
+      // Triggers
+      if(t==="message_regex"){
+        insp.appendChild(fld("Pattern", input(obj.pattern, v=>{ obj.pattern=v; })));
+        insp.appendChild(fld("Flags (e.g. i)", input(obj.flags, v=>{ obj.flags=v; })));
+      }
+      else if(t==="reaction_add" || t==="reaction_remove"){
+        insp.appendChild(fld("Message ID (optional)", input(obj.message_id, v=>{ obj.message_id=v; })));
+        insp.appendChild(fld("Emoji (optional, e.g. ✅ or name:id)", input(obj.emoji, v=>{ obj.emoji=v; })));
+      }
+      else if(t==="role_added" || t==="role_removed"){
+        insp.appendChild(fld("Role ID (optional filter)", input(obj.role_id, v=>{ obj.role_id=v; })));
+      }
+      else if(t==="schedule"){
+        insp.appendChild(fld("Interval seconds", number(obj.interval_seconds, v=>{ obj.interval_seconds=v; })));
+      }
+
+      // Actions — Messaging
+      else if(t==="send_message"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Message Template", textarea(obj.message_template, v=>{ obj.message_template=v; schedulePreviewDock(); })));
+      }
+      else if(t==="send_embed"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Title", input(obj.title, v=>{ obj.title=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Description", textarea(obj.embed_description, v=>{ obj.embed_description=v; schedulePreviewDock(); })));
+      }
+      else if(t==="paginate"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Use Embed", checkbox(obj.embed, v=>{ obj.embed=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Pages (JSON array of strings)", arrarea(obj.pages, v=>{ obj.pages=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Items var (alt to Pages)", input(obj.items_var||"", v=>{ obj.items_var=v; })));
+      }
+      else if(t==="dm_user"){
+        insp.appendChild(fld("User ID (blank = triggering user)", input(obj.user_id, v=>{ obj.user_id=v; })));
+        insp.appendChild(fld("Message Template", textarea(obj.message_template, v=>{ obj.message_template=v; })));
+      }
+      else if(t==="upload_file"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("File URL", input(obj.url, v=>{ obj.url=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Filename", input(obj.filename, v=>{ obj.filename=v; })));
+        insp.appendChild(fld("Caption (optional)", textarea(obj.content||"", v=>{ obj.content=v; schedulePreviewDock(); })));
+      }
+
+      // Actions — Roles & Moderation
+      else if(t==="role_add" || t==="role_remove"){
+        insp.appendChild(fld("User ID (blank = triggering user)", input(obj.user_id, v=>{ obj.user_id=v; })));
+        insp.appendChild(fld("Role ID", input(obj.role_id, v=>{ obj.role_id=v; })));
+        insp.appendChild(fld("or Role Name", input(obj.role_name, v=>{ obj.role_name=v; })));
+        insp.appendChild(fld("Reason (optional)", input(obj.reason, v=>{ obj.reason=v; })));
+      }
+      else if(t==="timeout"){
+        insp.appendChild(fld("User ID (blank = triggering user)", input(obj.user_id, v=>{ obj.user_id=v; })));
+        insp.appendChild(fld("Seconds", number(obj.seconds, v=>{ obj.seconds=v; })));
+        insp.appendChild(fld("Reason", input(obj.reason, v=>{ obj.reason=v; })));
+      }
+      else if(t==="kick"){
+        insp.appendChild(fld("User ID (blank = triggering user)", input(obj.user_id, v=>{ obj.user_id=v; })));
+        insp.appendChild(fld("Reason", input(obj.reason, v=>{ obj.reason=v; })));
+      }
+      else if(t==="ban"){
+        insp.appendChild(fld("User ID (blank = triggering user)", input(obj.user_id, v=>{ obj.user_id=v; })));
+        insp.appendChild(fld("Reason", input(obj.reason, v=>{ obj.reason=v; })));
+        insp.appendChild(fld("Delete Message Days", number(obj.delete_message_days, v=>{ obj.delete_message_days=v; })));
+      }
+
+      // Actions — Interaction systems
+      else if(t==="reaction_roles"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Message", textarea(obj.content, v=>{ obj.content=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Mapping (JSON array of {emoji, role_id})", arrarea(obj.map, v=>{ obj.map=v; })));
+      }
+      else if(t==="ticket_panel"){
+        insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Panel Message", textarea(obj.content, v=>{ obj.content=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Staff Role ID", input(obj.staff_role_id, v=>{ obj.staff_role_id=v; })));
+        insp.appendChild(fld("Category ID", input(obj.category_id, v=>{ obj.category_id=v; })));
+        insp.appendChild(fld("Transcript Channel ID", input(obj.transcript_channel_id, v=>{ obj.transcript_channel_id=v; })));
+      }
+
+      // ✅ Actions — FETCH API (flows + commands)
+      else if(t==="fetch_api"){
+        // General (works for flows and commands; channel is used by flows)
+        insp.appendChild(fld("Channel (flows only; name or ID)", input(obj.channel ?? "", v=>{ obj.channel=v; })));
+        insp.appendChild(fld("Reply mode (message|embed)", input(obj.reply_mode ?? "message", v=>{ obj.reply_mode=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Message template (uses {data})", textarea(obj.message_template ?? "API says: {data}", v=>{ obj.message_template=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Embed title", input(obj.embed_title ?? "API Result", v=>{ obj.embed_title=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Embed description (uses {data})", textarea(obj.embed_description ?? "{data}", v=>{ obj.embed_description=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Embed color (#RRGGBB)", input(obj.embed_color ?? "#5865F2", v=>{ obj.embed_color=v; schedulePreviewDock(); })));
+
+        // Request
+        insp.appendChild(fld("Method (GET/POST/PUT/PATCH/DELETE)", input(obj.method ?? "GET", v=>{ obj.method=v.toUpperCase(); })));
+        insp.appendChild(fld("URL (tokens ok, e.g. https://api.site?q={user_name})", input(obj.url ?? "", v=>{ obj.url=v; })));
+        insp.appendChild(fld("Headers JSON (e.g. {\"X-Api-Key\":\"{{secret.KEY}}\"})", textarea(obj.headers ?? "{}", v=>{ obj.headers=v; })));
+        insp.appendChild(fld("Params JSON (query or body if no Body)", textarea(obj.params ?? "{}", v=>{ obj.params=v; })));
+        insp.appendChild(fld("Body JSON (overrides Params for POST/PUT)", textarea(obj.body ?? "", v=>{ obj.body=v; })));
+        insp.appendChild(fld("Timeout (ms)", number(obj.timeout_ms ?? 6000, v=>{ obj.timeout_ms=v; })));
+        insp.appendChild(fld("Expect JSON? (true/false)", input(String(obj.expect_json ?? true), v=>{ obj.expect_json = (String(v).toLowerCase()==="true"); })));
+        insp.appendChild(fld("JSON path (e.g. data.items[0].name)", input(obj.json_path ?? "", v=>{ obj.json_path=v; })));
+
+        // Render style
+        insp.appendChild(fld("Render style (auto|list|table|json)", input(obj.render_style ?? "auto", v=>{ obj.render_style=v.toLowerCase(); schedulePreviewDock(); })));
+        insp.appendChild(fld("Display keys (comma list, e.g. name,uuid)", input(obj.display_keys ?? "", v=>{ obj.display_keys=v; schedulePreviewDock(); })));
+        insp.appendChild(fld("Row template (optional, e.g. {name} — {uuid})", input(obj.row_template ?? "", v=>{ obj.row_template=v; schedulePreviewDock(); })));
+      }
+
+      // Logic
+      else if(t==="set"){
+        insp.appendChild(fld("Key", input(obj.key, v=>{ obj.key=v; })));
+        insp.appendChild(fld("Value", input(obj.value, v=>{ obj.value=v; })));
+      }
+      else if(t==="if"){
+        insp.appendChild(fld("Expression (uses ctx)", input(obj.expr, v=>{ obj.expr=v; })));
+        insp.appendChild(fld("Then (steps JSON)", arrarea(obj.then, v=>{ obj.then=v; })));
+        insp.appendChild(fld("Else (steps JSON)", arrarea(obj.else, v=>{ obj.else=v; })));
+      }
+      else if(t==="for_each"){
+        insp.appendChild(fld("Items (ctx key or JSON array)", input(typeof obj.items==="string" ? obj.items : JSON.stringify(obj.items), v=>{
+          try{ obj.items = JSON.parse(v); }catch{ obj.items = v; }
+        })));
+        insp.appendChild(fld("As (loop var)", input(obj.as, v=>{ obj.as=v; })));
+        insp.appendChild(fld("Steps (JSON)", arrarea(obj.steps, v=>{ obj.steps=v; })));
+      }
+      else if(t==="steps"){
+        insp.appendChild(fld("Steps (JSON)", arrarea(obj.steps, v=>{ obj.steps=v; })));
+      }
+      else {
+        insp.appendChild(fld("Unknown type", input(obj.type, ()=>{})));
+      }
+
+      // Docs card (nice hint)
+      const meta = (TOOLBOX.flatMap(g=>g.items).find(i=>i.type===obj.type) || null);
+      if (meta && meta.docs) {
+        const tip = document.createElement('div');
+        tip.className = 'card';
+        tip.innerHTML = `<div style="font-size:12px;color:#9aa4b2">${meta.docs}</div>`;
+        insp.appendChild(tip);
+      }
+
+      schedulePreviewDock();
+    }
+
+
+
+    function insertAtCursor(el,text){
+      const start=el.selectionStart??el.value.length; const end=el.selectionEnd??el.value.length;
+      el.value = el.value.slice(0,start)+text+el.value.slice(end);
+      const pos=start+text.length; el.setSelectionRange(pos,pos); el.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+
+    function cardHeader(t){ const d=document.createElement("div"); d.className="card"; d.style.margin="0 0 10px 0"; d.textContent=t; return d; }
+    function field(lbl, el){ const w=document.createElement("div"); w.className="card"; const l=document.createElement("label"); l.textContent=lbl; w.appendChild(l); w.appendChild(el); return w; }
+    function input(lbl, val, on){
+      const el=document.createElement("input"); el.value=val||"";
+      el.oninput=()=>{ on(el.value); schedulePreviewDock(); };
+      return field(lbl, el);
+    }
+    function textarea(lbl, val, on){
+      const el=document.createElement("textarea"); el.value=val||"";
+      el.oninput=()=>{ on(el.value); schedulePreviewDock(); };
+      return field(lbl, el);
+    }
+
+    function readOnly(val){ const el=document.createElement("div"); el.textContent=val; el.className="hint"; return el; }
+
+
+    /* ---------------- API ---------------- */
+    async function loadSecrets() {
+      const gid = activeGuildId();
+      // include guild_id param only when set (guild‑scoped secrets)
+      const url = api + "/secrets" + (gid ? "?guild_id=" + encodeURIComponent(gid) : "");
+      const data = await getJSON(url);
+      renderSecrets(data.secrets || []);
+    }
+
+    function renderSecrets(list) {
+      const wrap = document.getElementById("secretsList");
+      wrap.innerHTML = "";
+      if (!list.length) {
+        wrap.textContent = "No secrets defined.";
+        return;
+      }
+      list.forEach(s => {
+        const row = document.createElement("div");
+        row.className = "card";
+        row.innerHTML = `<strong>${s.key}</strong> — ${s.scope}`;
+        const delBtn = document.createElement("button");
+        delBtn.className = "warn";
+        delBtn.textContent = "Delete";
+        delBtn.onclick = async () => {
+          if (!confirm(`Delete secret ${s.key}?`)) return;
+          await fetch(api + "/secrets/" + s.id, { method:"DELETE", credentials:"include" });
+          loadSecrets();
+        };
+        row.appendChild(delBtn);
+        wrap.appendChild(row);
+      });
+    }
+
+    function populateSecretScope() {
+      // populate the scope select with available guilds
+      const select = document.getElementById("secretScope");
+      // first option is user‑wide (already in HTML)
+      while (select.options.length > 1) select.remove(1);
+      (window.currentGuilds || []).forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = "Guild: " + g.name;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById("addSecretBtn").onclick = () => {
+      populateSecretScope();
+      document.getElementById("secretKey").value   = "";
+      document.getElementById("secretValue").value = "";
+      document.getElementById("secretModal").classList.remove("hidden");
+    };
+
+    document.getElementById("cancelSecret").onclick = () => {
+      document.getElementById("secretModal").classList.add("hidden");
+    };
+
+    document.getElementById("saveSecret").onclick = async () => {
+      const key     = document.getElementById("secretKey").value.trim();
+      const val     = document.getElementById("secretValue").value;
+      const scope   = document.getElementById("secretScope").value || null;
+      if (!key || !val) { alert("Key and value are required."); return; }
+      await fetch(api + "/secrets", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ key: key, value: val, guild_id: scope })
+      });
+      document.getElementById("secretModal").classList.add("hidden");
+      loadSecrets();
+    };
+
+    // When switching tabs, also handle secrets tab
+    document.querySelectorAll(".tab").forEach(t => {
+      t.onclick = () => {
+        document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+        t.classList.add("active");
+        activeTab = t.dataset.tab;
+        document.getElementById("flowsCanvas").style.display    = activeTab==="flows"    ? "block" : "none";
+        document.getElementById("commandsCanvas").style.display = activeTab==="commands" ? "block" : "none";
+        document.getElementById("secretsCanvas").style.display  = activeTab==="secrets"  ? "block" : "none";
+        selection = null;
+        if (activeTab === "secrets") loadSecrets();  // fetch secrets when tab selected
+        else renderInspector();                      // existing inspector update
+      };
+    });
+
+ 
+    
+ 
+ 
+    async function reloadAll(){
+      await Promise.all([loadFlows(), loadCommands()]);
+    }
+    // Normalize server responses and render
+    async function loadFlows(){
+      let data = null;
+      try {
+        data = await getJSON(api + guildPath("/flows"));
+      } catch (e) {
+        console.error("loadFlows failed:", e);
+        flows = [];
+        renderFlows();
+        return;
+      }
+
+      // Accept either {flows:[...]} or [...] or legacy {action:...}
+      const arr = Array.isArray(data) ? data : (data?.flows || []);
+      flows = (arr || []).map((f, i) => ({
+        id: f.id || uid() + i,
+        name: f.name || `Flow ${i+1}`,
+        trigger: f.trigger || (f.action && f.action.type ? f.action : null) || null,
+        actions: Array.isArray(f.actions) ? f.actions : (f.action ? [f.action] : []),
+        enabled: f.enabled !== false
+      }));
+      renderFlows();
+    }
+
+    async function loadCommands(){
+      let data = null;
+      try {
+        data = await getJSON(api + guildPath("/commands"));
+      } catch (e) {
+        console.error("loadCommands failed:", e);
+        commands = [];
+        renderCommands();
+        return;
+      }
+
+      // Accept either {commands:[...]} or [...] or legacy {action:...}
+      const arr = Array.isArray(data) ? data : (data?.commands || []);
+      commands = (arr || []).map((c, i) => ({
+        id: c.id || uid() + i,
+        name: c.name || "command",
+        description: c.description || "",
+        actions: Array.isArray(c.actions) ? c.actions : (c.action ? [c.action] : []),
+        enabled: c.enabled !== false
+      }));
+      renderCommands();
+    }
+
+
+    async function saveFlows(){
+      const payload = {
+        flows: flows.map(f=>{
+          const legacy = f.actions?.[0] ? {action: f.actions[0]} : {};
+          return { name:f.name, trigger:f.trigger, enabled:f.enabled!==false, actions:f.actions||[], ...legacy };
+        })
+      };
+      const res = await fetch(api + guildPath("/flows"), {
+        method: "POST",
+        credentials: 'include',
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("Save flows failed");
+    }
+
+    async function saveCommands(){
+      const payload = {
+        commands: commands.map(c=>{
+          const first = c.actions?.[0] || {type:"send_message", message_template:"OK."};
+          return { name:c.name, description:c.description, enabled:c.enabled!==false, action:first, actions:c.actions||[] };
+        })
+      };
+      const res = await fetch(api + guildPath("/commands"), {
+        method: "POST",
+        credentials: 'include',
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("Save commands failed");
+    }
+
+        
+
+
+    /* ---------------- Init ---------------- */
+    renderToolbox();
+    renderFlows();
+    renderCommands();
+    
+
+    // Tokens into inspector picker
+    const tokenPicker = document.getElementById("tokenPicker");
+    TOKENS.forEach(([k,d])=>{ const o=document.createElement("option"); o.value=k; o.textContent=`${k} — ${d}`; tokenPicker.appendChild(o); });
+
+    // ---- Token formatting (keep simple & safe) ----
+    function formatTemplate(str, ctx) {
+      return (str || "").replace(/\{(\w+)\}/g, (_, k) => (k in ctx ? String(ctx[k]) : `{${k}}`));
+    }
+
+    // ---- Pick / build a preview context ----
+    function currentPreviewCtx() {
+      const now = new Date();
+      return {
+        now: now.toISOString().slice(0,19).replace('T',' '),
+        guild_name: "Example Server",
+        member_count: 142,
+        user: "FluxPilot#1234",
+        user_name: "FluxPilot",
+        user_discriminator: "1234",
+        user_mention: "@FluxPilot",
+        joined_at: "2025-08-20 13:37:00"
+      };
+    }
+
+    // --- simple markdown/links for preview only ---
+    function previewMarkdown(s) {
+      return (s || "")
+        .replace(/```([^`]+)```/gs, (_, code) => `<pre style="background:#1E1F22;border:1px solid #3A3C43;border-radius:6px;padding:8px;overflow:auto"><code>${escapeHtml(code)}</code></pre>`)
+        .replace(/`([^`]+)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/(https?:\/\/[^\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank">$1</a>');
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+    function renderDiscordPreviewTo(container, kind, payload) {
+      const ctx = currentPreviewCtx();
+      container.innerHTML = "";
+
+      const wrap = document.createElement("div");
+      wrap.className = "discord-msg";
+
+      const row  = document.createElement("div"); row.className = "discord-row";
+      const av   = document.createElement("div"); av.className  = "discord-avatar";
+      const body = document.createElement("div"); body.className = "discord-body";
+
+      // ---- header line: FluxPilot + time (this is what was missing) ----
+      const header = document.createElement("div"); header.className = "discord-header";
+      const author = document.createElement("span"); author.className = "discord-author"; author.textContent = "FluxPilot";
+      const time   = document.createElement("span"); time.className   = "discord-time";
+      time.textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      header.append(author, time);  // << REQUIRED so the name/time actually render
+
+      const content = document.createElement("div"); content.className = "discord-content";
+
+      if (kind === "send_message") {
+        const txt = formatTemplate(payload.message_template || "", ctx);
+        content.innerHTML = `<div style="margin-top:4px">${previewMarkdown(txt).replace(/\n/g,'<br>')}</div>`;
+        body.append(header, content);
+      }
+
+      else if (kind === "send_embed") {
+        // Use the field names your inspector writes
+        const title  = previewMarkdown(formatTemplate(payload.embed_title || "Notification", ctx));
+        const desc   = previewMarkdown(formatTemplate(payload.embed_description || "", ctx));
+        const footer = formatTemplate(payload.embed_footer || "", ctx);
+
+        // color can be hex string or number
+        const color = (() => {
+          const raw = payload.embed_color ?? "#5865F2";
+          try { return (typeof raw === "number") ? `#${raw.toString(16).padStart(6,"0")}` : String(raw); }
+          catch { return "#5865F2"; }
+        })();
+
+        const embed = document.createElement("div"); embed.className = "discord-embed";
+        embed.style.borderLeftColor = color;
+        embed.innerHTML = `<div class="emb-title">${title}</div><div class="emb-desc">${desc}</div>`;
+        if (footer) embed.innerHTML += `<div class="discord-time" style="margin-top:6px">${escapeHtml(footer)}</div>`;
+
+        body.append(header, embed);
+      }
+
+      else if (kind === "fetch_api") {
+        const mode = (payload.reply_mode || "message").toLowerCase();
+        const desc = mode === "embed"
+          ? (payload.embed_description || "{data}")
+          : (payload.message_template || "{data}");
+
+        const hint = document.createElement("div");
+        hint.className = "discord-time";
+        hint.style.marginTop = "6px";
+        hint.textContent = `Fetch ${payload.method || "GET"} → ${payload.url || ""}`;
+
+        if (mode === "embed") {
+          const title = formatTemplate(payload.embed_title || "API Result", ctx);
+          let color = "#5865F2";
+          try {
+            const raw = payload.embed_color ?? "#5865F2";
+            color = (typeof raw === "number") ? `#${raw.toString(16).padStart(6,"0")}` : String(raw);
+          } catch (_) {}
+
+          const embed = document.createElement("div"); embed.className = "discord-embed";
+          embed.style.borderLeftColor = color;
+          embed.innerHTML = `<div class="emb-title">${escapeHtml(title)}</div><div class="emb-desc">${previewMarkdown(desc)}</div>`;
+          body.append(header, hint, embed);
+        } else {
+          content.innerHTML = previewMarkdown(desc);
+          body.append(header, hint, content);
+        }
+      }
+
+      row.append(av, body);
+      wrap.append(row);
+      container.append(wrap);
+    }
+
+  </script>
+
+  <div id="previewDock" class="collapsed">
+    <div id="dockHandle" class="handle">
+      <span class="chev">▾</span> Preview
+    </div>
+
+    <div class="dock-inner">
+      <div id="dockHead">
+        <div>Live preview (updates as you edit)</div>
+        <div class="hint">what your bot will send</div>
+      </div>
+      <div id="dockContent"></div>
+    </div>
+  </div>
+
+</body>
+</html>
