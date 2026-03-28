@@ -409,7 +409,7 @@ async def _send_step(ctx: Ctx, step: Dict[str, Any], discord_client):
 
 async def run_steps(ctx: Ctx, steps: List[Dict[str, Any]], discord_client=None):
     for step in steps:
-        t = (step.get("type") or step.get("kind") or "").lower()  # accept UI shape
+        t = (step.get("type") or step.get("kind") or "").lower()
         if t == "http":
             await _http_step(ctx, step)
         elif t == "extract":
@@ -417,27 +417,20 @@ async def run_steps(ctx: Ctx, steps: List[Dict[str, Any]], discord_client=None):
         elif t == "set":
             _set_step(ctx, step)
         elif t == "branch":
-            await _branch_step(ctx, step, lambda c,s: run_steps(c,s,discord_client))
+            await _branch_step(ctx, step, lambda c, s: run_steps(c, s, discord_client))
         elif t == "loop":
-            await _loop_step(ctx, step, lambda c,s: run_steps(c,s,discord_client))
+            await _loop_step(ctx, step, lambda c, s: run_steps(c, s, discord_client))
         elif t == "format":
             _format_step(ctx, step)
         elif t == "send":
             if discord_client:
                 await _send_step(ctx, step, discord_client)
-        if t == "set":
-            ctx[step["key"]] = step.get("value")
-            continue
-
-        if t == "if":
+        elif t == "if":
             expr = step.get("expr") or step.get("condition") or ""
-            def _safe_eval(e, c):
-                return eval(e, {"__builtins__": {}}, {"ctx": c, "len": len, "int": int, "str": str, "float": float})
-            branch = step.get("then", []) if _safe_eval(expr, ctx) else step.get("else", [])
+            result = bool(jmespath.search(expr, dict(ctx))) if expr else False
+            branch = step.get("then", []) if result else step.get("else", [])
             await run_steps(ctx, branch, discord_client=discord_client)
-            continue
-
-        if t in {"for_each", "foreach"}:
+        elif t in {"for_each", "foreach"}:
             items_ref = step.get("items")
             varname = step.get("as") or "item"
             items = ctx.get(items_ref) if isinstance(items_ref, str) else items_ref
@@ -445,9 +438,7 @@ async def run_steps(ctx: Ctx, steps: List[Dict[str, Any]], discord_client=None):
                 for it in items:
                     ctx[varname] = it
                     await run_steps(ctx, step.get("steps", []), discord_client=discord_client)
-            continue        
-        else:
-            raise ValueError(f"Unknown step type: {t}")
+        # unknown step types are silently skipped
 
 
 class FlowEngine:
@@ -469,22 +460,13 @@ class FlowEngine:
       {user} {user_name} {user_discriminator} {user_mention} {joined_at}
     """
 
-    def __init__(self, bot: discord.Client, flows: Dict[str, Any], guild_id: Optional[int] = None):
-        self.bot = bot
-        self.flows = flows.get("flows", [])
-        self.guild_id = guild_id
-        self._tasks: list[asyncio.Task] = []
-        
-    # --- FlowEngine additions ---
     def __init__(self, bot, flows, guild_id: int):
         self.bot = bot
         self.guild_id = int(guild_id)
-
-        # in-memory state for Sprint D features
+        self._tasks: list[asyncio.Task] = []
         self.reaction_role_map: dict[int, dict[str, int]] = {}
         self._ticket_cfgs: dict[int, dict] = {}
-        self._schedule_tasks = getattr(self, "_schedule_tasks", [])
-
+        self._disabled_ids: set[str] = set()
         self.set_flows(flows)
 
     def set_flows(self, flows_blob):
@@ -531,7 +513,6 @@ class FlowEngine:
                 "match_groups": list(m.groups()) if m.groups() else [],
             }
             await self._execute_flow(f, "message_regex", message.author, ctx)
-            await self.handle_message_regex(message)
 
     async def handle_reaction_add(self, payload: discord.RawReactionActionEvent):
         if payload.guild_id is None:
@@ -957,12 +938,6 @@ class FlowEngine:
                 await ch.delete(reason="ticket closed")
         return CloseTicket()
 
-
-        # flows can be disabled at runtime (in-memory)
-        self._disabled_ids: set[str] = {
-            str(f.get("id")) for f in self.flows if f.get("enabled") is False
-        }
-
     def _is_enabled(self, flow: dict) -> bool:
         fid = str(flow.get("id", ""))
         if fid and fid in self._disabled_ids:
@@ -1024,10 +999,6 @@ class FlowEngine:
         """Cancel then start schedules based on current self.flows."""
         await self.cancel_schedules()
         await self.start_schedules()
-
-    def set_flows(self, flows: Dict[str, Any]):
-        """Replace in-memory flows. Call restart_schedules() afterwards to apply."""
-        self.flows = flows.get("flows", [])
 
     async def _schedule_runner(self, flow: Dict[str, Any], interval: int):
         await self.bot.wait_until_ready()
@@ -1099,34 +1070,32 @@ class FlowEngine:
         self,
         flow: Dict[str, Any],
         context_source: str,
-        member: Optional[discord.Member] = None
+        member: Optional[discord.Member] = None,
+        ctx: Optional[Dict[str, Any]] = None,
     ):
         actions = flow.get("actions") or flow.get("steps") or []
         if not actions and "action" in flow:  # legacy single action
             actions = [flow["action"]]
 
+        initial_ctx = dict(ctx or {})
+
         for action in actions:
             msg_type = action.get("type")
-            if msg_type not in {"send_message", "send_embed", "fetch_api", "steps"}:
-                continue  # skip unsupported
-            handled = await self._try_handle_extra_action(action, ctx)
-            if handled:
-                continue
-
 
             for guild in self._guilds():
                 if not guild:
                     continue
 
-                # build context
+                # build context, seeded with any trigger-supplied values
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                ctx = {
+                guild_ctx = {
+                    **initial_ctx,
                     "now": now,
                     "guild_name": guild.name,
                     "member_count": getattr(guild, "member_count", None) or "unknown",
                 }
-                if member and isinstance(member, discord.Member) and member.guild and guild and member.guild.id == guild.id:
-                    ctx.update({
+                if member and isinstance(member, discord.Member) and member.guild and member.guild.id == guild.id:
+                    guild_ctx.update({
                         "user": f"{member.name}#{member.discriminator}",
                         "user_name": member.name,
                         "user_discriminator": member.discriminator,
@@ -1134,22 +1103,24 @@ class FlowEngine:
                         "joined_at": getattr(member, "joined_at", None),
                     })
 
-                # resolve channel
+                handled = await self._try_handle_extra_action(action, guild_ctx)
+                if handled:
+                    continue
+
                 channel_ref = action.get("channel_id") or action.get("channel") or "#general"
                 channel = await find_channel(guild, channel_ref)
 
-                if not channel:
-                    print(f"[FlowEngine] Channel not found in '{guild.name}': {channel_ref}")
-                    continue
-
-                # ---- execute each action type ----
                 if msg_type == "send_message":
+                    if not channel:
+                        continue
                     template = action.get("message_template", "Hello!")
-                    await channel.send(format_template(template, ctx))
+                    await channel.send(format_template(template, guild_ctx))
 
                 elif msg_type == "send_embed":
-                    title = format_template(action.get("title", "Notification"), ctx)
-                    desc  = format_template(action.get("description", ""), ctx)
+                    if not channel:
+                        continue
+                    title = format_template(action.get("title", "Notification"), guild_ctx)
+                    desc  = format_template(action.get("description", ""), guild_ctx)
                     color = discord.Color.blurple()
                     try:
                         if "color" in action:
@@ -1161,88 +1132,65 @@ class FlowEngine:
                     embed = discord.Embed(title=title, description=desc, color=color)
                     footer = action.get("footer")
                     if footer:
-                        embed.set_footer(text=format_template(footer, ctx))
+                        embed.set_footer(text=format_template(footer, guild_ctx))
                     await channel.send(embed=embed)
-                continue
-            if msg_type == "fetch_api":
-                # Build context (already set above)
-                method = (action.get("method") or "GET").upper()
-                url    = format_template(action.get("url") or "", ctx)
-                headers = {k: format_template(str(v), ctx) for k,v in _parse_json_obj(action.get("headers")).items()}
-                params  = _parse_json_obj(action.get("params"))
-                body    = _parse_json_obj(action.get("body"))
-                timeout_ms  = int(action.get("timeout_ms") or 8000)
-                expect_json = bool(action.get("expect_json") if action.get("expect_json") is not None else True)
-                json_path   = action.get("json_path") or ""
-                reply_mode  = (action.get("reply_mode") or "message").lower()
-                guild_id_for_scope = str(guild.id) if guild else None
-                url     = _inject_secrets_in_obj(url,     guild_id_for_scope)
-                headers = _inject_secrets_in_obj(headers, guild_id_for_scope)
-                params  = _inject_secrets_in_obj(params,  guild_id_for_scope)
-                body    = _inject_secrets_in_obj(body,    guild_id_for_scope)
 
-                
-                timeout = aiohttp.ClientTimeout(total=timeout_ms/1000)
-                async with aiohttp.ClientSession(timeout=timeout) as s:
-                    req = dict(url=url, headers=headers or None)
-                    if method == "GET":
-                        req["params"] = params or None
+                elif msg_type == "fetch_api":
+                    url     = format_template(action.get("url") or "", guild_ctx)
+                    method  = (action.get("method") or "GET").upper()
+                    headers = {k: format_template(str(v), guild_ctx) for k, v in _parse_json_obj(action.get("headers")).items()}
+                    params  = _parse_json_obj(action.get("params"))
+                    body    = _parse_json_obj(action.get("body"))
+                    timeout_ms  = int(action.get("timeout_ms") or 8000)
+                    expect_json = bool(action.get("expect_json") if action.get("expect_json") is not None else True)
+                    json_path   = action.get("json_path") or ""
+                    reply_mode  = (action.get("reply_mode") or "message").lower()
+                    guild_scope = str(guild.id)
+                    url     = _inject_secrets_in_obj(url,     guild_scope)
+                    headers = _inject_secrets_in_obj(headers, guild_scope)
+                    params  = _inject_secrets_in_obj(params,  guild_scope)
+                    body    = _inject_secrets_in_obj(body,    guild_scope)
+
+                    timeout = aiohttp.ClientTimeout(total=timeout_ms / 1000)
+                    async with aiohttp.ClientSession(timeout=timeout) as s:
+                        req: Dict[str, Any] = dict(url=url, headers=headers or None)
+                        if method == "GET":
+                            req["params"] = params or None
+                        else:
+                            fetch_payload = body if body else (params or None)
+                            if fetch_payload is not None:
+                                req["json"] = fetch_payload
+                        async with s.request(method, **req) as r:
+                            text = await r.text()
+                            data = None
+                            if expect_json:
+                                try:
+                                    data = json.loads(text)
+                                except Exception:
+                                    data = {"_raw": text}
+
+                    extracted = data
+                    if expect_json and json_path:
+                        extracted = _dot_get(data, json_path)
+
+                    if not channel:
+                        continue
+                    chunks = _smart_format(extracted, action, {**guild_ctx})
+                    if reply_mode == "embed":
+                        embed_title = format_template(action.get("embed_title") or "API Result", guild_ctx)
+                        embed = discord.Embed(title=embed_title, description=chunks[0], color=discord.Color.blurple())
+                        await channel.send(embed=embed)
+                        for chunk in chunks[1:]:
+                            await channel.send(chunk[:2000])
                     else:
-                        payload = body if body else (params or None)
-                        if payload is not None:
-                            req["json"] = payload
-                    async with s.request(method, **req) as r:
-                        text = await r.text()
-                        data = None
-                        if expect_json:
-                            try:
-                                data = json.loads(text)
-                            except Exception:
-                                data = {"_raw": text}
+                        await channel.send(chunks[0][:2000])
+                        for chunk in chunks[1:]:
+                            await channel.send(chunk[:2000])
 
-                extracted = data
-                if expect_json and json_path:
-                    extracted = _dot_get(data, json_path)
-
-                if expect_json:
-                    from json import dumps
-                    if isinstance(extracted, (dict, list)):
-                        rendered_data = dumps(extracted, ensure_ascii=False)[:1800]
-                    else:
-                        rendered_data = str(extracted)
-                else:
-                    rendered_data = (extracted if isinstance(extracted, str) else text)[:1800]
-
-                chunks = _smart_format(extracted, action, {**ctx})
-                if reply_mode == "embed":
-                    title = format_template(action.get("embed_title") or "API Result", ctx)
-                    embed = discord.Embed(title=title, description=chunks[0], color=discord.Color.blurple())
-                    await channel.send(embed=embed)
-                    for ch in chunks[1:]:
-                        await channel.send(ch[:2000])
-                else:
-                    await channel.send(chunks[0][:2000])
-                    for ch in chunks[1:]:
-                        await channel.send(ch[:2000])
-                continue
-            elif msg_type == "steps":
-                # Build a starting context (same keys you use elsewhere)
-                now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                ctx.update({
-                    "now": now,
-                    "guild_name": guild.name,
-                    "member_count": getattr(guild, "member_count", None) or "unknown",
-                })
-
-
-                # BEFORE running run_steps(...)
-                # (Place this just before `await run_steps(...)` in the "steps" branch)
-                chan = action.get("channel_id") or action.get("channel")
-                if chan:
-                    ctx["channel_id"] = str(chan)
-
-                # Run the toolbox steps; _send_step will use self.bot to send to channels
-                await run_steps(Ctx(ctx), action.get("steps", []), discord_client=self.bot)
-                continue
+                elif msg_type == "steps":
+                    chan_ref = action.get("channel_id") or action.get("channel")
+                    if chan_ref:
+                        guild_ctx["channel_id"] = str(chan_ref)
+                    await run_steps(Ctx(guild_ctx), action.get("steps", []), discord_client=self.bot)
 
 

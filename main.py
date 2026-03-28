@@ -188,18 +188,29 @@ INDEX_FILE = BASE_DIR / "index.html"
 STATIC_DIR = BASE_DIR / "static"
 
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="Discord SaaS API + UI (multi-guild)", version="0.3.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+_CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True,
-    allow_methods=["*"], allow_headers=["*"]
+    allow_origins=_CORS_ORIGINS or ["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-# Session middleware …
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.environ.get("SESSION_SECRET", "replace-me"),
     same_site="lax",
-    https_only=False  # True under HTTPS
+    https_only=False,
 )
 
 
@@ -232,13 +243,6 @@ def _code_challenge(verifier: str) -> str:
     return _b64url(digest)
 
 # If you already have these helpers, keep them; otherwise:
-def _new_sid() -> str:
-    return _b64url(secrets.token_bytes(32))
-
-def _now() -> int:
-    import time
-    return int(time.time())
-
 async def notify_bot(guild_id: str, kind: str):
     """Tell the bot to live-reload (commands or flows) for a guild."""
     url = os.getenv("BOT_CALLBACK_URL")
@@ -372,6 +376,7 @@ async def require_guild_access(request: Request, guild_id: str) -> dict:
 
 
 @app.get("/auth/discord/login")
+@limiter.limit("20/minute")
 async def auth_login(request: Request):
     # Ensure we have a sid (used later only to bind the logged-in user id)
     sid = request.session.get("sid")
@@ -621,7 +626,6 @@ async def upsert_secret(
     key = (payload.get("key") or "").strip()
     value = payload.get("value")
     guild_id = payload.get("guild_id")
-    enc_value = encrypt_for_user(user_id, str(value))
     if not key or value is None:
         raise HTTPException(400, "key and value are required")
 
@@ -798,6 +802,7 @@ def health():
 
 #------------------------------
 @app.post("/preview/fetch")
+@limiter.limit("30/minute")
 async def preview_fetch(
     request: Request,
     payload: dict = Body(...),
@@ -930,7 +935,8 @@ def _smart_preview_format(data, style="auto", row_template="", display_keys=""):
 
 
 @app.post("/preview/steps")
-async def preview_steps(payload: dict = Body(...)):
+@limiter.limit("30/minute")
+async def preview_steps(request: Request, payload: dict = Body(...)):
     """
     Dry-run a subset of 'steps': http, extract, set, format.
     Returns {'ok': True, 'chunks': [str, ...]} for the dock to render.
