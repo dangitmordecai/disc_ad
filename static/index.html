@@ -10,27 +10,27 @@
 
   <style>
 /* ================================================================
-   BOTTO — Clean SaaS Dark  v3.0
+   BOTTO — Discord Studio  v4.0
    ================================================================ */
 
 /* ── Design tokens ─────────────────────────────────────────────── */
 :root {
-  /* Core palette */
-  --bg:         #080808;
-  --surface:    #111111;
-  --surface-2:  #181818;
-  --surface-3:  #1f1f1f;
+  /* App surfaces */
+  --bg:         #0b0b0f;
+  --surface:    #111115;
+  --surface-2:  #17171d;
+  --surface-3:  #1e1e26;
 
   /* Borders */
-  --border:     rgba(255 255 255 / 0.07);
-  --border-hi:  rgba(255 255 255 / 0.12);
+  --border:     rgba(255,255,255,.07);
+  --border-hi:  rgba(255,255,255,.13);
   --border-focus: #10b981;
 
   /* Brand — emerald green */
   --green:      #10b981;
   --green-hi:   #34d399;
   --green-glow: rgba(16,185,129,.2);
-  --green-dim:  rgba(16,185,129,.12);
+  --green-dim:  rgba(16,185,129,.1);
 
   /* Accent secondary */
   --violet:     #8b5cf6;
@@ -44,28 +44,36 @@
   --muted:      #a1a1aa;
   --dim:        #52525b;
 
-  /* Gradients */
-  --grad:        linear-gradient(135deg, var(--green) 0%, #059669 100%);
-  --grad-subtle: rgba(16,185,129,.06);
-  --grad-text:   linear-gradient(120deg, #ffffff 0%, var(--green-hi) 100%);
+  /* Discord colors */
+  --dc-bg:      #36393f;
+  --dc-sidebar: #2f3136;
+  --dc-dark:    #202225;
+  --dc-text:    #dcddde;
+  --dc-muted:   #72767d;
+  --dc-blurple: #5865f2;
+  --dc-hover:   rgba(255,255,255,.06);
+
+  /* Step category colors */
+  --c-trigger:     #10b981;
+  --c-message:     #5865f2;
+  --c-moderation:  #f59e0b;
+  --c-logic:       #8b5cf6;
+  --c-data:        #06b6d4;
 
   /* Layout */
-  --hdr:          56px;
-  --sidebar-w:    300px;
-  --inspector-w:  380px;
-  --drawer-height: 240px;
-  --handle-h:     30px;
+  --hdr:       52px;
+  --panel-w:   440px;
 
   /* Geometry */
-  --r-xs: 5px;
+  --r-xs: 4px;
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 20px;
 
   /* Motion */
-  --ease: 0.14s cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: 0.2s cubic-bezier(0, 0, 0.2, 1);
+  --ease:     0.14s cubic-bezier(0.4,0,0.2,1);
+  --ease-out: 0.22s cubic-bezier(0,0,0.2,1);
 }
 
 /* ── Reset ─────────────────────────────────────────────────────── */
@@ -80,31 +88,21 @@ body {
   overflow: hidden;
 }
 
-/* ── Layout grid ───────────────────────────────────────────────── */
-.app {
+/* ── Studio layout ─────────────────────────────────────────────── */
+.studio {
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr var(--inspector-w);
+  grid-template-columns: 42% 58%;
   height: calc(100vh - var(--hdr));
   margin-top: var(--hdr);
-  position: relative;
-  z-index: 1;
 }
 
 /* ── Scrollbars ────────────────────────────────────────────────── */
-.sidebar, .main, .inspector {
-  overflow-y: auto;
+* {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,.1) transparent;
 }
-.sidebar::-webkit-scrollbar,
-.main::-webkit-scrollbar,
-.inspector::-webkit-scrollbar    { width: 4px; }
-.sidebar::-webkit-scrollbar-thumb,
-.main::-webkit-scrollbar-thumb,
-.inspector::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,.12);
-  border-radius: 4px;
-}
+*::-webkit-scrollbar { width: 4px; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 4px; }
 
 /* ── Header ────────────────────────────────────────────────────── */
 #siteHeader {
@@ -113,13 +111,24 @@ body {
   height: var(--hdr);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  background: rgba(8,8,8,.92);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  gap: 0;
+  padding: 0 20px;
+  background: rgba(11,11,15,.95);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
-  z-index: 100;
+  z-index: 200;
+}
+.hdr-nav {
+  display: flex;
+  gap: 2px;
+  margin: 0 16px;
+  flex: 1;
+}
+.hdr-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .brand {
@@ -161,29 +170,393 @@ body {
   text-transform: uppercase;
 }
 
-/* ── Columns ───────────────────────────────────────────────────── */
-.sidebar {
-  padding: 16px 12px;
-  border-right: 1px solid var(--border);
-  background: var(--surface);
-  position: relative;
-  z-index: 1;
-}
-
-.main {
-  padding: 20px;
+/* ── Builder pane (left) ───────────────────────────────────────── */
+.builder-pane {
   border-right: 1px solid var(--border);
   background: var(--bg);
-  position: relative;
-  z-index: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.builder-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+#flowsCanvas, #commandsCanvas {
+  padding: 12px 16px;
+  flex: 1;
 }
 
-.inspector {
-  padding: 20px;
-  background: var(--surface);
+/* ── Discord preview pane (right) ──────────────────────────────── */
+.discord-pane {
+  background: var(--dc-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   position: relative;
-  z-index: 1;
 }
+.dc-titlebar {
+  height: 48px;
+  background: var(--dc-bg);
+  border-bottom: 1px solid rgba(0,0,0,.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+.dc-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #f2f3f5;
+}
+.dc-hash {
+  color: var(--dc-muted);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+.dc-live-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green-hi);
+  letter-spacing: 0.06em;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+.dc-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.dc-sidebar {
+  width: 200px;
+  background: var(--dc-sidebar);
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 8px 0;
+}
+.dc-server-header {
+  padding: 10px 16px 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #f2f3f5;
+  border-bottom: 1px solid rgba(0,0,0,.2);
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.dc-section-label {
+  padding: 14px 8px 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dc-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.dc-channel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 2px 10px;
+  margin: 1px 4px;
+  border-radius: 4px;
+  color: var(--dc-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+  user-select: none;
+}
+.dc-channel:hover { background: rgba(255,255,255,.06); color: #d5d7da; }
+.dc-channel.active { background: rgba(255,255,255,.1); color: #f2f3f5; }
+.dc-channel-hash { font-size: 15px; opacity: .6; }
+
+/* Messages area */
+.dc-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dc-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--dc-muted);
+  text-align: center;
+  gap: 10px;
+}
+.dc-empty-icon { font-size: 40px; opacity: .5; }
+.dc-empty-text { font-size: 14px; font-weight: 600; color: #d5d7da; }
+.dc-empty-sub  { font-size: 12px; color: var(--dc-muted); }
+
+/* Discord message row */
+.dc-msg {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 4px 0;
+  animation: msgIn .18s var(--ease-out);
+}
+@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.dc-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--dc-blurple), #7289da);
+  flex-shrink: 0;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.dc-msg-body { flex: 1; min-width: 0; }
+.dc-msg-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+.dc-msg-author { font-weight: 600; color: #f2f3f5; font-size: 14px; }
+.dc-msg-bot-tag {
+  font-size: 9px; font-weight: 700; background: var(--dc-blurple);
+  color: #fff; border-radius: 3px; padding: 1px 4px; letter-spacing: .03em;
+}
+.dc-msg-time { font-size: 11px; color: var(--dc-muted); }
+.dc-msg-text { color: var(--dc-text); line-height: 1.4; font-size: 14px; }
+.dc-msg-text a { color: #00aff4; }
+.dc-msg-text strong { color: #f2f3f5; }
+.dc-embed {
+  margin-top: 6px;
+  border-left: 4px solid var(--dc-blurple);
+  background: rgba(0,0,0,.25);
+  border-radius: 0 4px 4px 0;
+  padding: 10px 14px;
+  max-width: 480px;
+}
+.dc-embed-title { font-weight: 700; font-size: 14px; color: #f2f3f5; margin-bottom: 4px; }
+.dc-embed-desc { font-size: 13px; color: var(--dc-text); line-height: 1.45; white-space: pre-wrap; }
+.dc-embed-footer { font-size: 11px; color: var(--dc-muted); margin-top: 8px; }
+.dc-typing {
+  display: flex; align-items: center; gap: 3px;
+  color: var(--dc-muted); font-size: 12px; padding: 6px 0;
+}
+.dc-typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--dc-muted);
+  animation: typingDot 1.2s ease-in-out infinite;
+}
+.dc-typing span:nth-child(2) { animation-delay: .2s; }
+.dc-typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes typingDot { 0%,60%,100%{transform:scale(1);opacity:.4} 30%{transform:scale(1.3);opacity:1} }
+
+/* ── Slide-in panel ────────────────────────────────────────────── */
+.slide-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 300;
+  backdrop-filter: blur(2px);
+}
+.slide-panel {
+  position: fixed;
+  right: 0; top: var(--hdr);
+  width: var(--panel-w);
+  height: calc(100vh - var(--hdr));
+  background: var(--surface);
+  border-left: 1px solid var(--border-hi);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(var(--panel-w));
+  transition: transform var(--ease-out);
+}
+.slide-panel.open { transform: translateX(0); }
+.slide-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.slide-panel-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px;
+}
+.slide-panel-icon { font-size: 18px; }
+.slide-panel-body {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+}
+.slide-panel-preview {
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  background: rgba(54,57,63,.4);
+  flex-shrink: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.slide-panel-preview-label {
+  font-size: 10px; font-weight: 700; color: var(--dc-muted);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+}
+
+/* ── Flow cards ────────────────────────────────────────────────── */
+.flow-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  margin-bottom: 14px;
+  transition: border-color var(--ease);
+}
+.flow-card:hover { border-color: var(--border-hi); }
+.flow-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.flow-card-title { font-weight: 700; font-size: 14px; }
+.flow-card-actions { display: flex; align-items: center; gap: 6px; }
+
+/* Trigger chip */
+.trigger-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer;
+  transition: filter var(--ease);
+  user-select: none;
+}
+.trigger-chip:hover { filter: brightness(1.15); }
+.trigger-chip.t-trigger     { background: rgba(16,185,129,.15); color: var(--green-hi); border: 1px solid rgba(16,185,129,.3); }
+.trigger-chip.t-message     { background: rgba(88,101,242,.15); color: #a5b4fc; border: 1px solid rgba(88,101,242,.3); }
+.trigger-chip.t-schedule    { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+.trigger-chip.t-role        { background: rgba(139,92,246,.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,.3); }
+
+/* Pipeline */
+.pipeline { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+
+.step-node {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color var(--ease), background var(--ease), box-shadow var(--ease);
+  position: relative;
+}
+.step-node:hover { border-color: var(--border-hi); background: var(--surface-3); }
+.step-node.selected {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px var(--green-glow);
+}
+.step-node-body { flex: 1; min-width: 0; }
+.step-node-type { font-weight: 600; font-size: 13px; }
+.step-node-sub  { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step-node-icon {
+  font-size: 16px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Step category color strips */
+.step-cat-trigger    .step-node-icon { background: rgba(16,185,129,.15); }
+.step-cat-message    .step-node-icon { background: rgba(88,101,242,.15); }
+.step-cat-moderation .step-node-icon { background: rgba(245,158,11,.15); }
+.step-cat-logic      .step-node-icon { background: rgba(139,92,246,.15); }
+.step-cat-data       .step-node-icon { background: rgba(6,182,212,.15); }
+.step-cat-trigger    { border-left: 3px solid var(--c-trigger); }
+.step-cat-message    { border-left: 3px solid var(--c-message); }
+.step-cat-moderation { border-left: 3px solid var(--c-moderation); }
+.step-cat-logic      { border-left: 3px solid var(--c-logic); }
+.step-cat-data       { border-left: 3px solid var(--c-data); }
+
+/* Connector between steps */
+.step-connector {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; padding: 2px 0;
+}
+.step-connector-line {
+  width: 2px; height: 18px;
+  background: repeating-linear-gradient(to bottom, var(--border-hi) 0px, var(--border-hi) 4px, transparent 4px, transparent 8px);
+}
+.step-add-btn {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-hi);
+  color: var(--dim);
+  font-size: 14px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--ease);
+  flex-shrink: 0;
+}
+.step-add-btn:hover {
+  border-color: var(--green); color: var(--green);
+  background: var(--green-dim);
+  filter: none; box-shadow: none; transform: scale(1.1);
+}
+
+/* Step remove button */
+.step-remove {
+  opacity: 0; padding: 2px 6px; border-radius: 4px;
+  background: rgba(239,68,68,.1); border: 1px solid transparent;
+  color: #f87171; font-size: 11px; cursor: pointer;
+  transition: all var(--ease); flex-shrink: 0;
+}
+.step-node:hover .step-remove { opacity: 1; }
+.step-remove:hover { background: #ef4444; color: #fff; border-color: #ef4444; filter: none; box-shadow: none; transform: none; }
+
+/* Test run animation */
+@keyframes testDot {
+  from { top: 0; opacity: 1; }
+  to   { top: 100%; opacity: 0; }
+}
+.test-dot {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green-glow);
+  animation: testDot .6s ease-in forwards;
+}
+.flow-card.test-running { border-color: var(--green); box-shadow: 0 0 0 1px var(--green-glow); }
+
+/* Step picker popover */
+.step-picker {
+  position: fixed; z-index: 500;
+  background: var(--surface-2);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--r-lg);
+  padding: 10px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.6);
+  width: 320px;
+  animation: fadeUp .14s var(--ease-out);
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.step-picker-group-label {
+  font-size: 10px; font-weight: 700; color: var(--dim);
+  text-transform: uppercase; letter-spacing: .07em;
+  padding: 6px 6px 2px;
+}
+.step-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+.step-picker-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 9px; border-radius: var(--r-sm);
+  background: transparent; border: 1px solid transparent;
+  color: var(--ink); font-size: 12px; font-weight: 500;
+  cursor: pointer; text-align: left;
+  transition: background var(--ease), border-color var(--ease);
+}
+.step-picker-item:hover { background: var(--surface-3); border-color: var(--border-hi); filter: none; box-shadow: none; transform: none; }
+.step-picker-item .spi-icon { font-size: 14px; width: 22px; text-align: center; }
 
 /* ── Typography ────────────────────────────────────────────────── */
 h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; margin: 0; }
@@ -587,70 +960,8 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
   to   { transform: translateX(0);    opacity: 1; }
 }
 
-/* ── Preview dock ──────────────────────────────────────────────── */
-#previewDock {
-  position: fixed;
-  left: calc(var(--sidebar-w) + 20px);
-  right: calc(var(--inspector-w) + 20px);
-  bottom: 0;
-  height: var(--drawer-height);
-  z-index: 1000;
-  transform: translateY(0);
-  transition: transform .24s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-#previewDock .handle    { pointer-events: auto; }
-#previewDock:not(.collapsed) { pointer-events: auto; }
-#previewDock.collapsed {
-  transform: translateY(calc(var(--drawer-height) - var(--handle-h)));
-}
-
-#previewDock .dock-inner {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-hi);
-  border-bottom: none;
-  border-radius: var(--r-md) var(--r-md) 0 0;
-  box-shadow: 0 -12px 48px rgba(0,0,0,.45);
-}
-
-#previewDock .handle {
-  position: absolute;
-  top: calc(-1 * var(--handle-h));
-  left: 20px;
-  height: var(--handle-h);
-  width: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--border-hi);
-  border-bottom: none;
-  border-radius: var(--r-sm) var(--r-sm) 0 0;
-  cursor: pointer;
-  transition: color var(--ease);
-}
-#previewDock .handle:hover { color: var(--ink); }
-#previewDock .handle .chev { transition: transform .2s ease; }
-#previewDock.collapsed .handle .chev { transform: rotate(180deg); }
-
-#dockHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--muted);
-}
-#dockContent { flex: 1; overflow: auto; padding: 14px; }
+/* ── Preview dock (legacy — hidden in studio mode) ─────────────── */
+#previewDock { display: none; }
 
 /* ── Discord preview ───────────────────────────────────────────── */
 .discord-msg { color: #DBDEE1; }
@@ -698,10 +1009,32 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
 /* ── Utility ───────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
+/* ── Enabled toggle ────────────────────────────────────────────── */
+.flow-enabled-wrap { display: flex; align-items: center; gap: 6px; }
+.toggle {
+  position: relative; width: 32px; height: 18px;
+  display: inline-block; flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--surface-3); border-radius: 999px;
+  border: 1px solid var(--border-hi); cursor: pointer;
+  transition: background var(--ease);
+}
+.toggle input:checked + .toggle-track { background: var(--green); border-color: var(--green); }
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px;
+  transition: transform var(--ease);
+}
+.toggle input:checked + .toggle-track::after { transform: translateX(14px); }
+
 /* ── Responsive ────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
-  .app { grid-template-columns: 1fr; }
-  .main { border-right: none; }
+@media (max-width: 1100px) {
+  .studio { grid-template-columns: 1fr; }
+  .discord-pane { display: none; }
 }
 
 /* ── Template gallery ──────────────────────────────────────────── */
@@ -816,178 +1149,151 @@ details.adv-toggle .card { margin-top: 6px; }
 <body>
 
 
-  <header id="siteHeader" class="botto">
+  <!-- ======= HEADER ======= -->
+  <header id="siteHeader">
     <div class="brand">
       <span class="logo-glyph">⚡</span>
       <span class="logo-word">botto</span>
+      <span class="pill" style="margin-left:4px;font-size:9px">STUDIO</span>
     </div>
 
-    <!-- keep the rest of your toolbar as-is (auth box, Drafts, Publish, Login)… -->
+    <nav class="hdr-nav">
+      <div class="tab active" data-tab="flows">Flows</div>
+      <div class="tab" data-tab="commands">Commands</div>
+      <div class="tab" data-tab="secrets">Secrets</div>
+    </nav>
 
+    <div class="hdr-right">
+      <select id="guildPicker" style="display:none;font-size:12px;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--ink);max-width:180px"></select>
+      <span id="guildInfo" class="hint" style="font-size:11px">Sign in to get started</span>
 
-    <div class="toolbar" style="display:flex;gap:8px;align-items:center">
-    <div id="authBox" class="hidden" style="display:flex;align-items:center;gap:8px">
-      <img id="userAvatar" style="width:28px;height:28px;border-radius:9999px;border:1px solid #334155" alt="">
-      <div style="line-height:1">
-        <div id="userName" style="font-weight:600">User</div>
-        <!-- tiny actions row under the name -->
-        <div class="auth-mini-links">
-          <a id="accountLink" href="#">Account</a>
-          <span class="sep">·</span>
-          <a id="logoutLink" href="#">Logout</a>
+      <div id="authBox" class="hidden" style="display:flex;align-items:center;gap:8px">
+        <img id="userAvatar" style="width:28px;height:28px;border-radius:9999px" alt="">
+        <div style="line-height:1.2">
+          <div id="userName" style="font-weight:600;font-size:12px">User</div>
+          <div class="auth-mini-links">
+            <a id="accountLink" href="#">Account</a>
+            <span class="sep">·</span>
+            <a id="logoutLink" href="#">Logout</a>
+          </div>
         </div>
       </div>
-    </div>
 
-
-
-    <!-- Drafts dropdown -->
-    <div class="dropdown" id="draftsDropdown" style="position:relative">
-      <button class="secondary" id="draftsBtn">Drafts ▾</button>
-      <div class="menu hidden" id="draftsMenu"
-          style="position:absolute; right:0; top:100%; min-width:170px; background:var(--card);
-                  border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:6px; box-shadow:0 10px 26px rgba(0,0,0,.35)">
-
-        <button class="menu-item" id="draftSave"    style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Save draft</button>
-        <button class="menu-item" id="draftSaveAs"  style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Save draft as…</button>
-        <button class="menu-item" id="draftLoad"    style="display:block;width:100%;text-align:left;padding:8px 10px;background:transparent;border:none;color:var(--ink);border-radius:8px">Load draft</button>
+      <div class="dropdown" id="draftsDropdown" style="position:relative">
+        <button class="secondary mini" id="draftsBtn">Drafts ▾</button>
+        <div class="menu hidden" id="draftsMenu" style="position:absolute;right:0;top:calc(100% + 4px);min-width:160px;z-index:9999">
+          <button class="menu-item" id="draftSave">Save draft</button>
+          <button class="menu-item" id="draftSaveAs">Save as…</button>
+          <button class="menu-item" id="draftLoad">Load draft</button>
+        </div>
       </div>
-    </div>
 
-    <span id="savedIndicator">Saved ✓</span>
-    <button id="publishAllTop" style="display:none">Publish</button>
-    <button id="loginBtn">Sign in with Discord</button>
-
+      <span id="savedIndicator" style="font-size:11px;color:var(--green-hi);opacity:0;transition:opacity .4s">Saved ✓</span>
+      <button id="publishAllTop" style="display:none">Publish</button>
+      <button id="loginBtn">Sign in with Discord</button>
     </div>
   </header>
 
+  <!-- ======= STUDIO LAYOUT ======= -->
+  <div class="studio" id="studioLayout">
 
-  <!-- subtle floating accent blobs -->
-  <div style="position:fixed;inset:0;pointer-events:none;z-index:-1">
-    <div style="position:absolute;left:-10%;top:-10%;width:55vw;height:55vw;
-                background:radial-gradient(circle at 30% 30%, rgba(124,58,237,.18), transparent 55%);
-                filter:blur(30px)"></div>
-    <div style="position:absolute;right:-12%;bottom:-18%;width:60vw;height:60vw;
-                background:radial-gradient(circle at 70% 70%, rgba(34,211,238,.15), transparent 55%);
-                filter:blur(32px)"></div>
-  </div>
-
-
-  <div class="app">
-    <!-- ========== SIDEBAR / TOOLBOX ========== -->
-    <aside class="sidebar" id="sidebar">
-      <h2 style="margin:0 0 10px 0;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.1em">Toolbox</h2>
-
-
-
-      <div class="toolbox-header">
-        <input id="toolSearch" class="tool-search" placeholder="Search tools… (e.g. http, role, embed)" />
-      </div>
-
-      <!-- Folders rendered by JS -->
-      <div id="toolbox"></div>
-    </aside>
-
-    <main class="main">
-
-      <section class="card" style="padding:12px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <label class="hint" style="margin:0;color:#94a3b8">Active Guild</label>
-          <select id="guildPicker" style="background:#0b1220;border:1px solid #334155;border-radius:10px;padding:8px 10px;min-width:260px;display:none"></select>
-          <span id="guildInfo" class="hint">Please sign in, then pick a guild to manage flows and commands.</span>
-        </div>
-      </section>
-
-      <div class="tabs">
-        <div class="tab active" data-tab="flows">Flows</div>
-        <div class="tab" data-tab="commands">Commands</div>
-        <div class="tab" data-tab="secrets">Secrets</div>
-      </div>
-
-      <div class="flows-topbar">
-        <span class="hint" style="font-size:12px">Your automation flows</span>
+    <!-- LEFT: Builder pane -->
+    <div class="builder-pane" id="builderPane">
+      <div class="builder-top">
+        <span class="hint" style="font-size:12px" id="flowCount"></span>
         <button id="newFlowBtn">+ New Flow</button>
       </div>
 
-      <section id="flowsCanvas"></section>
-      <section id="commandsCanvas" style="display:none"></section>
+      <div id="flowsCanvas"></div>
+      <div id="commandsCanvas" style="display:none;padding:12px 16px"></div>
 
-      <section id="secretsCanvas" style="display:none">
-        <div class="topbar">
-          <h2>Secrets</h2>
+      <div id="secretsCanvas" style="display:none;padding:12px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h3 style="margin:0">Secrets</h3>
           <button id="addSecretBtn">Add Secret</button>
         </div>
         <div id="secretsList"></div>
-      </section>
-
-      <div class="hint">Tip: Drag a <b>Trigger</b> to start a flow. Drag <b>Actions</b> between nodes. Click any node to edit in the Inspector.</div>
-    </main>
-
-
-      
-
-      <!-- Add Secret Modal -->
-      <div id="secretModal" class="modal hidden">
-        <div class="modal-content card">
-          <h3>Add Secret</h3>
-          <label>Key <input id="secretKey"></label>
-          <label>Value <input id="secretValue" type="password"></label>
-          <label>Scope
-            <select id="secretScope">
-              <option value="">User‑wide</option>
-            </select>
-          </label>
-          <div class="row">
-            <button id="saveSecret">Save</button>
-            <button id="cancelSecret" class="secondary">Cancel</button>
-          </div>
-        </div>
       </div>
-          
-      <!-- Template Gallery Modal -->
-      <div id="tplModal" class="modal hidden">
-        <div class="modal-content card">
-          <h3 style="margin-bottom:4px">Start from a template</h3>
-          <p class="hint" style="margin:0 0 4px">Pick a flow to get started — customize everything after.</p>
-          <div class="tpl-grid" id="tplGrid"></div>
-          <div class="tpl-scratch" id="tplScratch">— or start from scratch —</div>
+    </div>
+
+    <!-- RIGHT: Discord preview pane -->
+    <div class="discord-pane" id="discordPane">
+      <div class="dc-titlebar">
+        <div class="dc-titlebar-left">
+          <span class="dc-hash">#</span>
+          <span id="dcChannelName">general</span>
         </div>
+        <span class="dc-live-badge">● LIVE PREVIEW</span>
       </div>
-
-      <!-- Save Draft As Modal -->
-      <div id="saveAsModal" class="modal hidden">
-        <div class="modal-content card">
-          <h3>Name this draft</h3>
-          <label>Draft name
-            <input id="saveAsName" placeholder="e.g., Welcome flow — v2">
-          </label>
-          <div class="row">
-            <button id="saveAsConfirm">Save</button>
-            <button id="saveAsCancel" class="secondary">Cancel</button>
-          </div>
-        </div>
+      <div class="dc-body">
+        <div class="dc-sidebar" id="dcSidebar"></div>
+        <div class="dc-messages" id="dcMessages"></div>
       </div>
-
-
-    <!-- ========== INSPECTOR ========== -->
-    <aside class="inspector">
-      <h3>Inspector</h3>
-      <div id="inspectorEmpty" class="hint">Select a trigger/action/command to edit its settings.</div>
-      <div id="inspector"></div>
-
-      <div class="card" style="margin-top:12px">
-        <h4 style="margin:0 0 8px 0">Tokens</h4>
-        <div class="toolbar" style="gap:6px">
-          <select id="tokenPicker" style="flex:1">
-            <option value="">Insert token…</option>
-          </select>
-          <button class="secondary" id="insertToken">Insert</button>
-        </div>
-        <div class="hint" style="margin-top:6px">Inserts into the currently focused field in the Inspector.</div>
-      </div>
-    </aside>
-  
+    </div>
   </div>
+
+  <!-- ======= SLIDE PANEL ======= -->
+  <div class="slide-overlay hidden" id="slideOverlay"></div>
+  <div class="slide-panel" id="slidePanel">
+    <div class="slide-panel-header">
+      <div class="slide-panel-title">
+        <span class="slide-panel-icon" id="panelIcon"></span>
+        <span id="panelTitle">Configure</span>
+      </div>
+      <button class="secondary mini" id="closePanel">✕</button>
+    </div>
+    <div class="slide-panel-body" id="panelBody"></div>
+    <div class="slide-panel-preview" id="panelPreview" style="display:none">
+      <div class="slide-panel-preview-label">DISCORD PREVIEW</div>
+      <div id="panelPreviewContent"></div>
+    </div>
+  </div>
+
+  <!-- ======= MODALS ======= -->
+  <!-- Add Secret -->
+  <div id="secretModal" class="modal hidden">
+    <div class="modal-content card">
+      <h3>Add Secret</h3>
+      <label>Key <input id="secretKey"></label>
+      <label>Value <input id="secretValue" type="password"></label>
+      <label>Scope
+        <select id="secretScope"><option value="">User‑wide</option></select>
+      </label>
+      <div class="row">
+        <button id="saveSecret">Save</button>
+        <button id="cancelSecret" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Gallery -->
+  <div id="tplModal" class="modal hidden">
+    <div class="modal-content card" style="width:580px;max-height:80vh;overflow-y:auto">
+      <h3 style="margin-bottom:4px">Start from a template</h3>
+      <p class="hint" style="margin:0 0 8px">Pick a flow to get started — customize everything after.</p>
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="tpl-scratch" id="tplScratch">— or start from scratch —</div>
+    </div>
+  </div>
+
+  <!-- Save Draft As -->
+  <div id="saveAsModal" class="modal hidden">
+    <div class="modal-content card">
+      <h3>Name this draft</h3>
+      <label>Draft name <input id="saveAsName" placeholder="e.g., Welcome flow — v2"></label>
+      <div class="row">
+        <button id="saveAsConfirm">Save</button>
+        <button id="saveAsCancel" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden compat elements for JS that references them -->
+  <div id="inspector" style="display:none"></div>
+  <div id="inspectorEmpty" style="display:none"></div>
+  <input id="toolSearch" style="display:none">
+  <div id="toolbox" style="display:none"></div>
+  <select id="tokenPicker" style="display:none"><option value="">Insert token…</option></select>
 
 
 
@@ -1077,10 +1383,10 @@ details.adv-toggle .card { margin-top: 6px; }
       // Debounced preview refresh
       let __previewTimer = null;
       function schedulePreviewDock(delay = 80){
-        if (typeof updatePreviewDock !== "function") return; // safety
         clearTimeout(__previewTimer);
         __previewTimer = setTimeout(() => {
-          if (!window.dockHidden) updatePreviewDock();
+          if (typeof updateDiscordPreview === "function") updateDiscordPreview();
+          else if (typeof updatePreviewDock === "function" && !window.dockHidden) updatePreviewDock();
         }, delay);
       }
 
@@ -1209,7 +1515,7 @@ details.adv-toggle .card { margin-top: 6px; }
     }
 
     // ---------------- Drafts: UI glue ----------------
-    const appGrid = document.querySelector(".app");
+    const appGrid = document.getElementById("studioLayout");
     const draftsPage = document.getElementById("draftsPage");
     const draftsBtn = document.getElementById("draftsBtn");
     const draftsMenu = document.getElementById("draftsMenu");
@@ -1302,6 +1608,7 @@ details.adv-toggle .card { margin-top: 6px; }
     function hideDraftsPage(){
       if (draftsPage) draftsPage.style.display = "none";
       if (appGrid) appGrid.style.display = "";
+      renderDiscordShell();
     }
 
     function renderDraftsList(){
@@ -2532,115 +2839,758 @@ details.adv-toggle .card { margin-top: 6px; }
 
     function flowById(id){ return flows.find(f=>f.id===id); }
 
+    /* ── Step helpers ── */
+    const STEP_ICONS = {
+      member_join:'🧑‍🍼', message_contains:'💬', message_regex:'🔎',
+      reaction_add:'➕', reaction_remove:'➖', role_added:'🎭', role_removed:'🎭',
+      channel_created:'📺', thread_created:'🧵', schedule:'⏱',
+      send_message:'✉️', send_embed:'🖼', dm_user:'📨', paginate:'📄',
+      upload_file:'📎', fetch_api:'🌐', log:'📝', sleep:'⏳',
+      role_add:'🎭', role_remove:'🎭', timeout:'⏰', kick:'👢', ban:'🚫',
+      reaction_roles:'🧩', ticket_panel:'🎟',
+      set:'🧩', if:'🔀', for_each:'🔁', steps:'📦'
+    };
+    function stepCategory(type){
+      if(['member_join','message_contains','message_regex','reaction_add','reaction_remove','role_added','role_removed','channel_created','thread_created','schedule'].includes(type)) return 'trigger';
+      if(['send_message','send_embed','dm_user','paginate','upload_file','log','sleep'].includes(type)) return 'message';
+      if(['role_add','role_remove','timeout','kick','ban','reaction_roles','ticket_panel'].includes(type)) return 'moderation';
+      if(['set','if','for_each','steps'].includes(type)) return 'logic';
+      if(['fetch_api'].includes(type)) return 'data';
+      return 'message';
+    }
+    function triggerChipClass(type){
+      if(['schedule'].includes(type)) return 't-schedule';
+      if(['message_contains','message_regex'].includes(type)) return 't-message';
+      if(['role_added','role_removed'].includes(type)) return 't-role';
+      return 't-trigger';
+    }
+
+    /* ── Render flow pipeline card ── */
+    function renderFlowCard(flow){
+      const card = document.createElement("div");
+      card.className = "flow-card";
+      card.dataset.flowId = flow.id;
+
+      // Header
+      const hdr = document.createElement("div");
+      hdr.className = "flow-card-header";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "flow-card-title";
+      titleEl.textContent = flow.name;
+
+      const acts = document.createElement("div");
+      acts.className = "flow-card-actions";
+
+      // Test button
+      const testBtn = document.createElement("button");
+      testBtn.className = "secondary mini";
+      testBtn.textContent = "▶ Test";
+      testBtn.onclick = (e) => { e.stopPropagation(); animateTestRun(flow, card); };
+
+      // Rename
+      const renBtn = document.createElement("button");
+      renBtn.className = "secondary mini";
+      renBtn.textContent = "Rename";
+      renBtn.onclick = async () => {
+        const v = await uiPrompt("Flow name:", "", flow.name);
+        if (v !== null && v.trim()) { flow.name = v.trim(); renderFlows(); scheduleAutoSave(); }
+      };
+
+      // Delete
+      const delBtn = document.createElement("button");
+      delBtn.className = "secondary mini";
+      delBtn.textContent = "Delete";
+      delBtn.onclick = async () => {
+        if (await uiConfirm(`Delete "${flow.name}"?`, "Delete flow")) {
+          flows = flows.filter(f => f.id !== flow.id);
+          closeStepPanel();
+          renderFlows();
+          scheduleAutoSave();
+          uiToast(`"${flow.name}" deleted`, {title:"Deleted"});
+        }
+      };
+
+      // Enabled toggle
+      const tog = document.createElement("label");
+      tog.className = "toggle";
+      tog.title = flow.enabled ? "Enabled" : "Disabled";
+      const togInput = document.createElement("input");
+      togInput.type = "checkbox"; togInput.checked = !!flow.enabled;
+      togInput.onchange = (e) => { flow.enabled = e.target.checked; scheduleAutoSave(); };
+      const togTrack = document.createElement("span"); togTrack.className = "toggle-track";
+      tog.appendChild(togInput); tog.appendChild(togTrack);
+
+      acts.append(testBtn, renBtn, delBtn, tog);
+      hdr.append(titleEl, acts);
+      card.appendChild(hdr);
+
+      // Trigger chip
+      const trigChip = document.createElement("div");
+      const ttype = flow.trigger?.type || "none";
+      trigChip.className = `trigger-chip ${triggerChipClass(ttype)}`;
+      trigChip.innerHTML = `<span>${STEP_ICONS[ttype]||'⚡'}</span><span>${titleForTrigger(flow.trigger)}</span>`;
+      trigChip.title = "Click to change trigger";
+      trigChip.onclick = () => showTriggerPicker(flow, trigChip);
+      card.appendChild(trigChip);
+
+      // Pipeline
+      const pipeline = document.createElement("div");
+      pipeline.className = "pipeline";
+      pipeline.style.marginTop = "10px";
+
+      // Trigger step node
+      const trigNode = renderStepNode(flow.trigger || {type:'none'}, 'trigger', flow, -1);
+      pipeline.appendChild(trigNode);
+
+      // Action nodes with connectors
+      flow.actions.forEach((action, idx) => {
+        pipeline.appendChild(makeConnector(flow, idx));
+        pipeline.appendChild(renderStepNode(action, 'action', flow, idx));
+      });
+
+      // Final connector + Add step button
+      pipeline.appendChild(makeConnector(flow, flow.actions.length));
+      const addBtn = document.createElement("button");
+      addBtn.className = "secondary mini";
+      addBtn.style.cssText = "width:100%;margin-top:2px;font-size:12px;border-style:dashed";
+      addBtn.textContent = "+ Add step";
+      addBtn.onclick = () => showStepPicker(flow, flow.actions.length, addBtn);
+      pipeline.appendChild(addBtn);
+
+      card.appendChild(pipeline);
+      return card;
+    }
+
+    function makeConnector(flow, insertIndex){
+      const wrap = document.createElement("div");
+      wrap.className = "step-connector";
+      const line = document.createElement("div"); line.className = "step-connector-line";
+      const btn = document.createElement("button"); btn.className = "step-add-btn";
+      btn.textContent = "+"; btn.title = "Add step here";
+      btn.onclick = () => showStepPicker(flow, insertIndex, btn);
+      wrap.append(line, btn, line.cloneNode());
+      return wrap;
+    }
+
+    function renderStepNode(step, nodeType, flow, index){
+      const cat = nodeType === 'trigger' ? 'trigger' : stepCategory(step.type);
+      const node = document.createElement("div");
+      node.className = `step-node step-cat-${cat}`;
+      node.dataset.flowId = flow.id;
+      if (nodeType === 'action') node.dataset.index = index;
+
+      const icon = document.createElement("div");
+      icon.className = "step-node-icon";
+      icon.textContent = STEP_ICONS[step.type] || '❓';
+
+      const body = document.createElement("div");
+      body.className = "step-node-body";
+      const typeLabel = document.createElement("div");
+      typeLabel.className = "step-node-type";
+      typeLabel.textContent = nodeType === 'trigger'
+        ? titleForTrigger(step)
+        : (step.type || 'unknown').replace(/_/g,' ');
+      const sub = document.createElement("div");
+      sub.className = "step-node-sub";
+      sub.textContent = nodeType === 'trigger' ? subForTrigger(step) : subForAction(step);
+      body.append(typeLabel, sub);
+
+      node.append(icon, body);
+
+      // Remove button for actions
+      if (nodeType === 'action') {
+        const rm = document.createElement("button");
+        rm.className = "step-remove"; rm.textContent = "✕"; rm.title = "Remove";
+        rm.onclick = (e) => {
+          e.stopPropagation();
+          _lastDeleted = {flowId:flow.id, index, action: JSON.parse(JSON.stringify(step))};
+          flow.actions.splice(index, 1);
+          closeStepPanel();
+          renderFlows();
+          scheduleAutoSave();
+          uiToast("Step removed.", {title:"Removed", duration:3500, action:{label:"Undo", fn:()=>{
+            const f = flows.find(x=>x.id===_lastDeleted?.flowId);
+            if(f&&_lastDeleted){f.actions.splice(_lastDeleted.index,0,_lastDeleted.action);_lastDeleted=null;renderFlows();}
+          }}});
+        };
+        node.appendChild(rm);
+      }
+
+      // Click to configure
+      node.onclick = () => {
+        const ctx = nodeType === 'trigger'
+          ? {kind:'trigger', flowId:flow.id}
+          : {kind:'action', flowId:flow.id, index};
+        openStepPanel(step, ctx, node);
+      };
+
+      return node;
+    }
+
     function renderFlows(){
-      const host = document.getElementById("flowsCanvas"); host.innerHTML="";
-      if(flows.length===0){
+      const host = document.getElementById("flowsCanvas");
+      host.innerHTML = "";
+
+      const cnt = document.getElementById("flowCount");
+      if (cnt) cnt.textContent = flows.length ? `${flows.length} flow${flows.length>1?'s':''}` : '';
+
+      if(flows.length === 0){
         const empty = document.createElement("div");
-        empty.className="card";
-        empty.innerHTML = `<div style="text-align:center;padding:12px 0 4px">
-          <div style="font-size:28px;margin-bottom:10px">⚡</div>
-          <div style="font-weight:700;font-size:15px;margin-bottom:6px">No flows yet</div>
-          <div class="hint" style="margin-bottom:16px">Start with a template or drag a trigger from the toolbox.</div>
-        </div>
-        <div class="tpl-grid" style="grid-template-columns:1fr 1fr 1fr">
-          ${FLOW_TEMPLATES.slice(0,3).map(t=>`<button class="tpl-card" data-tpl='${JSON.stringify(t.flow).replace(/'/g,"&#39;")}'>
-            <span class="tpl-emoji">${t.emoji}</span>
-            <div class="tpl-name">${t.name}</div>
-            <div class="tpl-desc">${t.desc}</div>
-          </button>`).join("")}
-        </div>
-        <div style="text-align:center;margin-top:10px">
-          <button id="seeAllTpls" class="secondary" style="font-size:12px">See all templates →</button>
-        </div>`;
+        empty.style.cssText = "padding:20px 0";
+        empty.innerHTML = `
+          <div style="text-align:center;padding:16px 0 20px">
+            <div style="font-size:36px;margin-bottom:12px">⚡</div>
+            <div style="font-weight:700;font-size:16px;margin-bottom:6px">No flows yet</div>
+            <div class="hint" style="margin-bottom:20px">Automate your Discord server — start with a template.</div>
+          </div>
+          <div class="tpl-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
+            ${FLOW_TEMPLATES.slice(0,3).map(t=>`<button class="tpl-card" data-tpl='${JSON.stringify(t.flow).replace(/'/g,"&#39;")}'>
+              <span class="tpl-emoji">${t.emoji}</span>
+              <div class="tpl-name">${t.name}</div>
+              <div class="tpl-desc">${t.desc}</div>
+            </button>`).join("")}
+          </div>
+          <div style="text-align:center">
+            <button id="seeAllTpls" class="secondary" style="font-size:12px">See all templates →</button>
+          </div>`;
         empty.querySelectorAll(".tpl-card").forEach(btn => {
-          btn.onclick = () => {
-            try { createFlow(null, JSON.parse(btn.dataset.tpl)); scheduleAutoSave(); } catch(_){}
-          };
+          btn.onclick = () => { try{ createFlow(null, JSON.parse(btn.dataset.tpl)); scheduleAutoSave(); }catch(_){} };
         });
         empty.querySelector("#seeAllTpls")?.addEventListener("click", openTemplateModal);
         host.appendChild(empty);
       }
-      flows.forEach(flow=>{
-        const lane = document.createElement("div"); lane.className="lane"; lane.dataset.flow = flow.id;
 
-        // header
-        const head = document.createElement("div"); head.className="lane-header";
-        head.innerHTML = `<div><b>${flow.name}</b> ${flow.enabled?"<span class='pill' style='background:#16a34a'>enabled</span>":"<span class='pill' style='background:#9ca3af'>off</span>"}</div><div class="toolbar"><label style='display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px'>Enabled <input type='checkbox' ${flow.enabled?"checked":""} /></label><button class="secondary" data-act="rename">Rename</button><button class="secondary" data-act="delete">Delete</button></div>`;
-
-        lane.appendChild(head);
-
-        // nodes row
-        const row = document.createElement("div"); row.className="nodes";
-        // Trigger node
-        const t = document.createElement("div"); t.className="node trigger"; t.innerHTML = `<span class="icon">⏱️</span><div><div class="title">${titleForTrigger(flow.trigger)}</div><div class="sub">${subForTrigger(flow.trigger)}</div></div>`;
-        t.onclick = ()=>{ selection={kind:"trigger", flowId:flow.id}; renderInspector(); };
-        row.appendChild(t);
-
-        // add gap to drop actions before first
-        row.appendChild(gap(flow.id, 0));
-
-        // action nodes
-        flow.actions.forEach((a, idx)=>{
-          const n = document.createElement("div"); n.className="node action";
-          n.innerHTML = `<span class="icon">➡️</span><div><div class="title">${a.type}</div><div class="sub">${subForAction(a)}</div></div><span class="x" title="Remove">✕</span>`;
-          n.onclick = (ev)=>{ if(ev.target.classList.contains("x")){
-            _lastDeleted = {flowId:flow.id, index:idx, action:JSON.parse(JSON.stringify(a))};
-            flow.actions.splice(idx,1); renderFlows(); renderInspector(); scheduleAutoSave();
-            uiToast("Action removed.", {title:"Removed", duration:3500, action:{label:"Undo", fn:()=>{
-              const f=flows.find(x=>x.id===_lastDeleted?.flowId);
-              if(f&&_lastDeleted){f.actions.splice(_lastDeleted.index,0,_lastDeleted.action);_lastDeleted=null;renderFlows();}
-            }}});
-          } else { selection={kind:"action", flowId:flow.id, index:idx}; renderInspector(); } };
-          // draggable reorder
-          n.draggable=true;
-          n.addEventListener("dragstart",(ev)=>{ ev.dataTransfer.setData("text/plain", JSON.stringify({reorder:true, flowId:flow.id, index:idx})); });
-          row.appendChild(n);
-          row.appendChild(gap(flow.id, idx+1));
-        });
-
-        // allow dropping a trigger here to replace
-        lane.addEventListener("dragover",ev=>{ ev.preventDefault(); if(isTool(ev,"trigger")||isTool(ev,"template")) lane.classList.add("dropping"); });
-        lane.addEventListener("dragleave",()=>lane.classList.remove("dropping"));
-        lane.addEventListener("drop",ev=>{
-          ev.preventDefault(); lane.classList.remove("dropping");
-          const data = JSON.parse(ev.dataTransfer.getData("text/plain") || "{}");
-          if(data.reorder){ /* ignore */ return; }
-          if(data.type==="trigger"){ flow.trigger = data.data; renderFlows(); }
-          if(data.type==="template"){ Object.assign(flow, {name:data.data.name||flow.name, trigger:data.data.trigger, actions:data.data.actions||[]}); renderFlows(); }
-        });
-
-        lane.querySelector('[data-act="rename"]').onclick = ()=>{ const v = prompt("Flow name", flow.name||""); if(v!==null){ flow.name=v.trim(); renderFlows(); scheduleAutoSave(); } };
-        lane.querySelector('[data-act="delete"]').onclick = ()=>{ flows = flows.filter(f=>f.id!==flow.id); renderFlows(); renderInspector(); scheduleAutoSave(); };
-        head.querySelector("input[type=checkbox]").onchange = (e)=>{ flow.enabled = !!e.target.checked; scheduleAutoSave(); };
-
-        lane.appendChild(row);
-
-        // "+ Add action" button at bottom of each flow
-        const addActionBtn = document.createElement("button");
-        addActionBtn.className = "secondary mini";
-        addActionBtn.textContent = "+ Add action";
-        addActionBtn.style.cssText = "margin-top:10px;font-size:11px";
-        addActionBtn.onclick = () => openActionPicker(flow);
-        lane.appendChild(addActionBtn);
-
-        host.appendChild(lane);
+      flows.forEach(flow => {
+        const card = renderFlowCard(flow);
+        host.appendChild(card);
       });
 
-      // Canvas drop to create new flows by dropping a trigger/template on empty area
-      host.addEventListener("dragover",ev=>{ ev.preventDefault(); host.classList.add("dropping"); });
-      host.addEventListener("dragleave",()=>host.classList.remove("dropping"));
-      host.addEventListener("drop",ev=>{
-        ev.preventDefault(); host.classList.remove("dropping");
-        const data = JSON.parse(ev.dataTransfer.getData("text/plain")||"{}");
-        if(data.type==="trigger"){ createFlow(applyDefaults(data.data)); }
-        if(data.type==="template") createFlow(null,data.data);
-      });
-
-      schedulePreviewDock();
-
+      // Highlight selected step
+      highlightSelected();
+      updateDiscordPreview();
     }
 
     function isTool(ev, kind){ try{ const d=JSON.parse(ev.dataTransfer.getData("text/plain")||"{}"); return d.type===kind; }catch{return false;} }
+
+    /* ──────────────────────────────────────────────────────────────
+       SLIDE PANEL (step config)
+    ────────────────────────────────────────────────────────────── */
+    function openStepPanel(obj, ctx, anchorNode) {
+      selection = ctx;
+      highlightSelected();
+
+      const panel = document.getElementById("slidePanel");
+      const overlay = document.getElementById("slideOverlay");
+      const titleEl = document.getElementById("panelTitle");
+      const iconEl  = document.getElementById("panelIcon");
+      const body    = document.getElementById("panelBody");
+
+      // Title & icon
+      const type = obj?.type || "unknown";
+      iconEl.textContent = STEP_ICONS[type] || "⚙️";
+      if (ctx.kind === "trigger") {
+        titleEl.textContent = "Trigger: " + titleForTrigger(obj);
+      } else {
+        titleEl.textContent = type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      }
+
+      // Render form
+      body.innerHTML = "";
+      renderPanelForm(obj, ctx, body);
+
+      // Mini preview
+      updatePanelPreview(obj, ctx);
+
+      // Open
+      overlay.classList.remove("hidden");
+      panel.classList.add("open");
+      updateDiscordPreview();
+    }
+
+    function closeStepPanel() {
+      selection = null;
+      document.getElementById("slidePanel").classList.remove("open");
+      document.getElementById("slideOverlay").classList.add("hidden");
+      document.querySelectorAll(".step-node.selected").forEach(n => n.classList.remove("selected"));
+      updateDiscordPreview();
+    }
+
+    document.getElementById("closePanel").onclick = closeStepPanel;
+    document.getElementById("slideOverlay").onclick = closeStepPanel;
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && document.getElementById("slidePanel").classList.contains("open")) {
+        closeStepPanel();
+      }
+    });
+
+    function highlightSelected() {
+      document.querySelectorAll(".step-node.selected").forEach(n => n.classList.remove("selected"));
+      if (!selection) return;
+      if (selection.kind === "trigger") {
+        const card = document.querySelector(`[data-flow-id="${selection.flowId}"]`);
+        if (card) {
+          const first = card.querySelector(".step-node.step-cat-trigger");
+          if (first) first.classList.add("selected");
+        }
+      } else if (selection.kind === "action") {
+        const nodes = document.querySelectorAll(`.step-node[data-flow-id="${selection.flowId}"][data-index="${selection.index}"]`);
+        nodes.forEach(n => n.classList.add("selected"));
+      }
+    }
+
+    function updatePanelPreview(obj, ctx) {
+      const preview = document.getElementById("panelPreview");
+      const content = document.getElementById("panelPreviewContent");
+      const previewTypes = ["send_message","send_embed","dm_user","fetch_api","upload_file","ticket_panel","reaction_roles","paginate"];
+      if (!previewTypes.includes(obj?.type)) { preview.style.display="none"; return; }
+      preview.style.display = "";
+      content.innerHTML = "";
+      renderDiscordPreviewTo(content, obj.type, obj);
+    }
+
+    /* ── Panel form (same logic as old renderInspector, writes into a container) ── */
+    function renderPanelForm(obj, ctx, container) {
+      if (!obj) { container.innerHTML = "<div class='hint'>Nothing to configure.</div>"; return; }
+
+      applyDefaults(obj);
+
+      const _curFlow = ctx?.flowId ? flows.find(f=>f.id===ctx.flowId) : null;
+      const _curIdx  = ctx?.index ?? 999;
+      const _availToks = getAvailableTokens(_curFlow, _curIdx);
+
+      const fld = (label, el) => {
+        const w = document.createElement("div"); w.style.marginBottom="10px";
+        const isText = el.tagName==="TEXTAREA"||(el.tagName==="INPUT"&&el.type!=="number"&&el.type!=="checkbox");
+        if(isText){
+          const row = document.createElement("div"); row.className="tok-row";
+          const L = document.createElement("label"); L.textContent=label;
+          const tb = document.createElement("button"); tb.className="token-btn"; tb.textContent="{ }"; tb.type="button";
+          tb.onclick = e => { e.preventDefault(); showTokenDropdown(tb, el, _availToks); };
+          row.append(L,tb); w.appendChild(row);
+        } else {
+          const L=document.createElement("label"); L.textContent=label; w.appendChild(L);
+        }
+        w.appendChild(el); return w;
+      };
+      const inp = (val, on) => { const el=document.createElement("input"); el.value=val??""; el.oninput=e=>{on(e.target.value); scheduleAutoSave(); updatePanelPreview(obj,ctx); updateDiscordPreview();}; return el; };
+      const num = (val, on) => { const el=document.createElement("input"); el.type="number"; el.value=val??""; el.oninput=e=>{on(Number(e.target.value||0)); scheduleAutoSave();}; return el; };
+      const chk = (val, on) => { const el=document.createElement("input"); el.type="checkbox"; el.checked=!!val; el.onchange=e=>{on(!!e.target.checked); scheduleAutoSave(); updateDiscordPreview();}; return el; };
+      const ta  = (val, on) => { const el=document.createElement("textarea"); el.value=typeof val==="string"?val:JSON.stringify(val,null,2); el.oninput=e=>{on(e.target.value); scheduleAutoSave(); updatePanelPreview(obj,ctx); updateDiscordPreview();}; return el; };
+      const jsonarea=(val,on)=>{ const el=document.createElement("textarea"); el.value=JSON.stringify(val??{},null,2); el.oninput=e=>{ try{on(JSON.parse(el.value||"{}")); el.style.borderColor="";}catch{el.style.borderColor="#f59e0b";}; scheduleAutoSave();}; return el; };
+      const arrarea=(val,on)=>{ const el=document.createElement("textarea"); el.value=JSON.stringify(val??[],null,2); el.oninput=e=>{ try{on(JSON.parse(el.value||"[]")); el.style.borderColor="";}catch{el.style.borderColor="#f59e0b";}; scheduleAutoSave();}; return el; };
+      const COMMON_STEP_TYPES=["send_message","send_embed","dm_user","role_add","role_remove","timeout","set","log","sleep","fetch_api"];
+      const stepChips=(arr,onChange)=>{
+        const wrap=document.createElement("div"); wrap.className="step-chips";
+        const render=()=>{ wrap.innerHTML=""; (arr||[]).forEach((step,i)=>{ const chip=document.createElement("div"); chip.className="step-chip"; chip.innerHTML=`<span class="step-chip-type">${step.type||"unknown"}</span><span class="step-chip-x" title="Remove">✕</span>`; chip.querySelector(".step-chip-x").onclick=()=>{arr.splice(i,1);onChange(arr);render();}; wrap.appendChild(chip); }); const sel=document.createElement("select"); sel.className="step-add-select"; sel.innerHTML=`<option value="">+ Add step…</option>`+COMMON_STEP_TYPES.map(t=>`<option value="${t}">${t}</option>`).join(""); sel.onchange=()=>{if(!sel.value)return;arr.push(applyDefaults({type:sel.value}));onChange(arr);sel.value="";render();}; wrap.appendChild(sel); };
+        render(); return wrap;
+      };
+
+      const t = (obj.type||"").toLowerCase();
+
+      // Triggers
+      if(t==="message_regex"){
+        container.append(fld("Pattern",inp(obj.pattern,v=>{obj.pattern=v;})));
+        container.append(fld("Flags (e.g. i)",inp(obj.flags,v=>{obj.flags=v;})));
+      } else if(t==="reaction_add"||t==="reaction_remove"){
+        container.append(fld("Message ID (optional)",inp(obj.message_id,v=>{obj.message_id=v;})));
+        container.append(fld("Emoji (optional)",inp(obj.emoji,v=>{obj.emoji=v;})));
+      } else if(t==="role_added"||t==="role_removed"){
+        container.append(fld("Role ID (optional filter)",inp(obj.role_id,v=>{obj.role_id=v;})));
+      } else if(t==="schedule"){
+        container.append(fld("Interval seconds",num(obj.interval_seconds,v=>{obj.interval_seconds=v;})));
+      }
+      // Messaging
+      else if(t==="send_message"){
+        container.append(fld("Channel (#name or ID)",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("Message",ta(obj.message_template,v=>{obj.message_template=v;})));
+      } else if(t==="send_embed"){
+        container.append(fld("Channel",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("Title",inp(obj.title,v=>{obj.title=v;})));
+        container.append(fld("Description",ta(obj.embed_description,v=>{obj.embed_description=v;})));
+        const adv=document.createElement("details"); adv.className="adv-toggle"; adv.innerHTML="<summary>Advanced ▾</summary>";
+        adv.append(fld("Footer",inp(obj.embed_footer||"",v=>{obj.embed_footer=v;})));
+        adv.append(fld("Color (#RRGGBB)",inp(obj.embed_color||"#5865F2",v=>{obj.embed_color=v;})));
+        container.appendChild(adv);
+      } else if(t==="dm_user"){
+        container.append(fld("User ID (blank = triggering user)",inp(obj.user_id,v=>{obj.user_id=v;})));
+        container.append(fld("Message",ta(obj.message_template,v=>{obj.message_template=v;})));
+      } else if(t==="upload_file"){
+        container.append(fld("Channel",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("File URL",inp(obj.url,v=>{obj.url=v;})));
+        container.append(fld("Caption",ta(obj.content||"",v=>{obj.content=v;})));
+      } else if(t==="paginate"){
+        container.append(fld("Channel",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("Use Embed",chk(obj.embed,v=>{obj.embed=v;})));
+        container.append(fld("Pages (JSON array)",arrarea(obj.pages,v=>{obj.pages=v;})));
+      }
+      // Moderation
+      else if(t==="role_add"||t==="role_remove"){
+        container.append(fld("User ID (blank = triggering user)",inp(obj.user_id,v=>{obj.user_id=v;})));
+        container.append(fld("Role ID",inp(obj.role_id,v=>{obj.role_id=v;})));
+        container.append(fld("or Role Name",inp(obj.role_name,v=>{obj.role_name=v;})));
+        container.append(fld("Reason",inp(obj.reason,v=>{obj.reason=v;})));
+      } else if(t==="timeout"){
+        container.append(fld("User ID",inp(obj.user_id,v=>{obj.user_id=v;})));
+        container.append(fld("Seconds",num(obj.seconds,v=>{obj.seconds=v;})));
+        container.append(fld("Reason",inp(obj.reason,v=>{obj.reason=v;})));
+      } else if(t==="kick"){
+        container.append(fld("User ID",inp(obj.user_id,v=>{obj.user_id=v;})));
+        container.append(fld("Reason",inp(obj.reason,v=>{obj.reason=v;})));
+      } else if(t==="ban"){
+        container.append(fld("User ID",inp(obj.user_id,v=>{obj.user_id=v;})));
+        container.append(fld("Reason",inp(obj.reason,v=>{obj.reason=v;})));
+        container.append(fld("Delete message days",num(obj.delete_message_days,v=>{obj.delete_message_days=v;})));
+      } else if(t==="reaction_roles"){
+        container.append(fld("Channel",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("Message",ta(obj.content,v=>{obj.content=v;})));
+        container.append(fld("Mapping (JSON [{emoji,role_id}])",arrarea(obj.map,v=>{obj.map=v;})));
+      } else if(t==="ticket_panel"){
+        container.append(fld("Channel",inp(obj.channel,v=>{obj.channel=v;})));
+        container.append(fld("Panel Message",ta(obj.content,v=>{obj.content=v;})));
+        container.append(fld("Staff Role ID",inp(obj.staff_role_id,v=>{obj.staff_role_id=v;})));
+        container.append(fld("Category ID",inp(obj.category_id,v=>{obj.category_id=v;})));
+        container.append(fld("Transcript Channel ID",inp(obj.transcript_channel_id,v=>{obj.transcript_channel_id=v;})));
+      }
+      // Fetch API
+      else if(t==="fetch_api"){
+        container.append(fld("URL",inp(obj.url??"",v=>{obj.url=v;})));
+        container.append(fld("Method",inp(obj.method??"GET",v=>{obj.method=v.toUpperCase();})));
+        container.append(fld("Channel",inp(obj.channel??"",v=>{obj.channel=v;})));
+        container.append(fld("Message template (uses {data})",ta(obj.message_template??"API says: {data}",v=>{obj.message_template=v;})));
+        const adv=document.createElement("details"); adv.className="adv-toggle"; adv.innerHTML="<summary>Advanced ▾</summary>";
+        adv.append(fld("Reply mode",inp(obj.reply_mode??"message",v=>{obj.reply_mode=v;})));
+        adv.append(fld("Embed title",inp(obj.embed_title??"API Result",v=>{obj.embed_title=v;})));
+        adv.append(fld("Embed description",ta(obj.embed_description??"{data}",v=>{obj.embed_description=v;})));
+        adv.append(fld("Headers JSON",ta(obj.headers??"{}",v=>{obj.headers=v;})));
+        adv.append(fld("Params JSON",ta(obj.params??"{}",v=>{obj.params=v;})));
+        adv.append(fld("Timeout ms",num(obj.timeout_ms??6000,v=>{obj.timeout_ms=v;})));
+        adv.append(fld("Expect JSON",chk(obj.expect_json??true,v=>{obj.expect_json=v;})));
+        adv.append(fld("JSON path",inp(obj.json_path??"",v=>{obj.json_path=v;})));
+        container.appendChild(adv);
+      }
+      // Logic
+      else if(t==="set"){
+        container.append(fld("Key",inp(obj.key,v=>{obj.key=v;})));
+        container.append(fld("Value",inp(obj.value,v=>{obj.value=v;})));
+      } else if(t==="if"){
+        container.append(fld("Condition expression",inp(obj.expr,v=>{obj.expr=v;})));
+        const tw=document.createElement("div"); tw.className="card";
+        const tl=document.createElement("label"); tl.textContent="Then (if true)"; tw.appendChild(tl);
+        if(!Array.isArray(obj.then))obj.then=[];
+        tw.appendChild(stepChips(obj.then,v=>{obj.then=v;})); container.appendChild(tw);
+        const ew=document.createElement("div"); ew.className="card";
+        const el=document.createElement("label"); el.textContent="Else (if false)"; ew.appendChild(el);
+        if(!Array.isArray(obj.else))obj.else=[];
+        ew.appendChild(stepChips(obj.else,v=>{obj.else=v;})); container.appendChild(ew);
+      } else if(t==="for_each"){
+        container.append(fld("Items variable",inp(typeof obj.items==="string"?obj.items:JSON.stringify(obj.items||[]),v=>{try{obj.items=JSON.parse(v);}catch{obj.items=v;}})));
+        container.append(fld("Loop variable name",inp(obj.as||"item",v=>{obj.as=v;})));
+        const sw=document.createElement("div"); sw.className="card";
+        const sl=document.createElement("label"); sl.textContent="Steps"; sw.appendChild(sl);
+        if(!Array.isArray(obj.steps))obj.steps=[];
+        sw.appendChild(stepChips(obj.steps,v=>{obj.steps=v;})); container.appendChild(sw);
+      } else if(t==="steps"){
+        const sw=document.createElement("div"); sw.className="card";
+        const sl=document.createElement("label"); sl.textContent="Nested steps"; sw.appendChild(sl);
+        if(!Array.isArray(obj.steps))obj.steps=[];
+        sw.appendChild(stepChips(obj.steps,v=>{obj.steps=v;})); container.appendChild(sw);
+      } else {
+        container.append(fld("Type",inp(obj.type,()=>{})));
+      }
+
+      // Docs hint
+      const meta = TOOLBOX.flatMap(g=>g.items).find(i=>i.type===obj.type);
+      if(meta?.docs){
+        const tip=document.createElement("div"); tip.className="card";
+        tip.style.marginTop="12px";
+        tip.innerHTML=`<div style="font-size:12px;color:var(--muted)">${meta.docs}</div>`;
+        container.appendChild(tip);
+      }
+    }
+
+    /* ── renderInspector shim (for backwards compat) ── */
+    function renderInspector(){
+      if(selection) {
+        let obj = null;
+        if(selection.kind==="trigger"){
+          const f=flows.find(x=>x.id===selection.flowId); obj=f?.trigger;
+          if(obj) openStepPanel(obj, selection);
+        } else if(selection.kind==="action"){
+          const f=flows.find(x=>x.id===selection.flowId); obj=f?.actions?.[selection.index];
+          if(obj) openStepPanel(obj, selection);
+        } else if(selection.kind==="command"||selection.kind==="cmd_action"){
+          // commands still render in old inspector div for now
+          _oldRenderInspector();
+        }
+      } else {
+        closeStepPanel();
+      }
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       DISCORD PREVIEW PANE
+    ────────────────────────────────────────────────────────────── */
+    const DC_CHANNELS = ["general","announcements","rules","roles","off-topic","bot-logs","support"];
+    let _previewChannel = "general";
+
+    function renderDiscordShell(){
+      const sidebar = document.getElementById("dcSidebar");
+      if(!sidebar) return;
+      sidebar.innerHTML = "";
+
+      const srv = document.createElement("div");
+      srv.className = "dc-server-header";
+      srv.innerHTML = `<span style="color:#f2f3f5;font-weight:700">My Server</span> <span style="color:var(--dc-muted)">▾</span>`;
+      sidebar.appendChild(srv);
+
+      const lbl = document.createElement("div"); lbl.className="dc-section-label"; lbl.textContent="TEXT CHANNELS";
+      sidebar.appendChild(lbl);
+
+      DC_CHANNELS.forEach(ch => {
+        const item = document.createElement("div");
+        item.className = "dc-channel" + (ch===_previewChannel ? " active" : "");
+        item.dataset.ch = ch;
+        item.innerHTML = `<span class="dc-channel-hash">#</span>${ch}`;
+        item.onclick = () => {
+          _previewChannel = ch;
+          document.getElementById("dcChannelName").textContent = ch;
+          sidebar.querySelectorAll(".dc-channel").forEach(x=>x.classList.toggle("active", x.dataset.ch===ch));
+          // If selected step has a channel field, update it
+          if (selection?.kind==="action") {
+            const f=flows.find(x=>x.id===selection.flowId);
+            const a=f?.actions?.[selection.index];
+            if(a&&'channel'in a){ a.channel="#"+ch; scheduleAutoSave(); renderFlows(); }
+          }
+          updateDiscordPreview();
+        };
+        sidebar.appendChild(item);
+      });
+    }
+
+    function updateDiscordPreview(){
+      const msgs = document.getElementById("dcMessages");
+      if(!msgs) return;
+      msgs.innerHTML="";
+
+      // Find what to preview
+      let kind, payload;
+      if(selection?.kind==="action"){
+        const f=flows.find(x=>x.id===selection.flowId);
+        const a=f?.actions?.[selection.index];
+        if(a){ kind=a.type; payload=a; }
+      } else if(selection?.kind==="trigger"){
+        const f=flows.find(x=>x.id===selection.flowId);
+        if(f?.actions?.[0]){ kind=f.actions[0].type; payload=f.actions[0]; }
+      } else {
+        // Show first flow's first action
+        const f=flows[0];
+        if(f?.actions?.[0]){ kind=f.actions[0].type; payload=f.actions[0]; }
+      }
+
+      if(!kind || !payload){
+        msgs.innerHTML=`<div class="dc-empty">
+          <div class="dc-empty-icon">🤖</div>
+          <div class="dc-empty-text">Configure a step to see the preview</div>
+          <div class="dc-empty-sub">Click any step in your flow to configure it</div>
+        </div>`;
+        return;
+      }
+
+      // System date header
+      const dateLine=document.createElement("div");
+      dateLine.style.cssText="text-align:center;font-size:11px;color:var(--dc-muted);padding:8px 0 12px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:12px";
+      dateLine.textContent="Today";
+      msgs.appendChild(dateLine);
+
+      if(kind==="fetch_api"){
+        // Show typing indicator while loading
+        const typing=document.createElement("div"); typing.className="dc-typing";
+        typing.innerHTML=`<span></span><span></span><span></span><span style="margin-left:6px;font-size:12px">botto is typing…</span>`;
+        msgs.appendChild(typing);
+        // Then async fetch
+        updatePreviewDock().then(()=>{
+          const host=document.getElementById("dockContent");
+          if(!host) return;
+          msgs.innerHTML="";
+          msgs.appendChild(dateLine.cloneNode(true));
+          const wrap=document.createElement("div"); wrap.className="dc-msg";
+          const av=document.createElement("div"); av.className="dc-avatar"; av.textContent="🤖";
+          const body=document.createElement("div"); body.className="dc-msg-body";
+          body.appendChild(host.firstChild?.cloneNode(true) || document.createTextNode(""));
+          wrap.append(av,body); msgs.appendChild(wrap);
+        }).catch(()=>{});
+        return;
+      }
+
+      // Build a Discord-style message row
+      const row=document.createElement("div"); row.className="dc-msg";
+      const av=document.createElement("div"); av.className="dc-avatar"; av.textContent="🤖";
+      const body=document.createElement("div"); body.className="dc-msg-body";
+
+      const hdr=document.createElement("div"); hdr.className="dc-msg-header";
+      const author=document.createElement("span"); author.className="dc-msg-author"; author.textContent="botto";
+      const botTag=document.createElement("span"); botTag.className="dc-msg-bot-tag"; botTag.textContent="APP";
+      const time=document.createElement("span"); time.className="dc-msg-time";
+      time.textContent="Today at "+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+      hdr.append(author,botTag,time);
+      body.appendChild(hdr);
+
+      const ctx=currentPreviewCtx();
+
+      if(kind==="send_message"||kind==="dm_user"){
+        const txt=formatTemplate(payload.message_template||"",ctx);
+        const content=document.createElement("div"); content.className="dc-msg-text";
+        content.innerHTML=previewMarkdown(txt).replace(/\n/g,"<br>");
+        body.appendChild(content);
+      } else if(kind==="send_embed"){
+        const embed=document.createElement("div"); embed.className="dc-embed";
+        const color=payload.embed_color||"#5865f2";
+        embed.style.borderLeftColor=color;
+        const title=document.createElement("div"); title.className="dc-embed-title";
+        title.innerHTML=previewMarkdown(formatTemplate(payload.title||payload.embed_title||"Embed",ctx));
+        const desc=document.createElement("div"); desc.className="dc-embed-desc";
+        desc.innerHTML=previewMarkdown(formatTemplate(payload.embed_description||"",ctx));
+        embed.append(title,desc);
+        if(payload.embed_footer){ const f=document.createElement("div"); f.className="dc-embed-footer"; f.textContent=formatTemplate(payload.embed_footer,ctx); embed.appendChild(f); }
+        body.appendChild(embed);
+      } else if(kind==="reaction_roles"||kind==="ticket_panel"){
+        const content=document.createElement("div"); content.className="dc-msg-text";
+        content.innerHTML=previewMarkdown(formatTemplate(payload.content||"",ctx)).replace(/\n/g,"<br>");
+        body.appendChild(content);
+        if(kind==="ticket_panel"){
+          const btn=document.createElement("div");
+          btn.style.cssText="margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:var(--dc-blurple);padding:6px 14px;border-radius:4px;font-size:13px;font-weight:600;color:#fff";
+          btn.textContent="🎟 Create Ticket"; body.appendChild(btn);
+        }
+      } else {
+        const content=document.createElement("div"); content.className="dc-msg-text";
+        content.textContent=`[${kind}]`;
+        body.appendChild(content);
+      }
+
+      row.append(av,body);
+      msgs.appendChild(row);
+    }
+
+    /* Wrap updatePreviewDock so it stays working for fetch_api async path */
+    const _origUpdatePreviewDock = typeof updatePreviewDock === "function" ? updatePreviewDock : null;
+
+    /* ──────────────────────────────────────────────────────────────
+       STEP & TRIGGER PICKERS
+    ────────────────────────────────────────────────────────────── */
+    let _pickerEl = null;
+    function closePicker(){ if(_pickerEl){_pickerEl.remove();_pickerEl=null;} }
+
+    const PICKER_GROUPS = [
+      { label:"Messaging", cat:"message", color:"var(--c-message)", items:["send_message","send_embed","dm_user","paginate","upload_file"] },
+      { label:"Moderation", cat:"moderation", color:"var(--c-moderation)", items:["role_add","role_remove","timeout","kick","ban","reaction_roles","ticket_panel"] },
+      { label:"Logic", cat:"logic", color:"var(--c-logic)", items:["set","if","for_each","steps"] },
+      { label:"Data", cat:"data", color:"var(--c-data)", items:["fetch_api","log","sleep"] },
+    ];
+
+    function showStepPicker(flow, insertIndex, anchor){
+      closePicker();
+      const picker=document.createElement("div"); picker.className="step-picker";
+      _pickerEl=picker;
+
+      PICKER_GROUPS.forEach(group=>{
+        const lbl=document.createElement("div"); lbl.className="step-picker-group-label";
+        lbl.style.color=group.color; lbl.textContent=group.label;
+        picker.appendChild(lbl);
+        const grid=document.createElement("div"); grid.className="step-picker-grid";
+        group.items.forEach(type=>{
+          const item=document.createElement("button"); item.className="step-picker-item";
+          item.innerHTML=`<span class="spi-icon">${STEP_ICONS[type]||"❓"}</span>${type.replace(/_/g," ")}`;
+          item.onclick=()=>{
+            closePicker();
+            const action=applyDefaults({type});
+            flow.actions.splice(insertIndex,0,action);
+            renderFlows();
+            scheduleAutoSave();
+            const newCtx={kind:"action",flowId:flow.id,index:insertIndex};
+            openStepPanel(action,newCtx);
+          };
+          grid.appendChild(item);
+        });
+        picker.appendChild(grid);
+      });
+
+      document.body.appendChild(picker);
+      // Position near anchor
+      const rect=anchor.getBoundingClientRect();
+      const left=Math.min(rect.left, window.innerWidth-330);
+      const top=Math.min(rect.bottom+4, window.innerHeight-picker.offsetHeight-10);
+      picker.style.left=left+"px"; picker.style.top=(rect.bottom+4)+"px";
+
+      setTimeout(()=>document.addEventListener("click",function closeFn(e){
+        if(!picker.contains(e.target)&&e.target!==anchor){closePicker();document.removeEventListener("click",closeFn);}
+      }),0);
+    }
+
+    function showTriggerPicker(flow, anchor){
+      closePicker();
+      const picker=document.createElement("div"); picker.className="step-picker";
+      _pickerEl=picker;
+
+      const lbl=document.createElement("div"); lbl.className="step-picker-group-label";
+      lbl.textContent="Choose Trigger"; picker.appendChild(lbl);
+      const grid=document.createElement("div"); grid.className="step-picker-grid";
+
+      const triggerTypes=TOOLBOX[0].items;
+      triggerTypes.forEach(item=>{
+        const btn=document.createElement("button"); btn.className="step-picker-item";
+        btn.innerHTML=`<span class="spi-icon">${STEP_ICONS[item.type]||"⚡"}</span>${item.label}`;
+        btn.onclick=()=>{
+          closePicker();
+          flow.trigger=applyDefaults({type:item.type});
+          renderFlows();
+          scheduleAutoSave();
+          openStepPanel(flow.trigger,{kind:"trigger",flowId:flow.id});
+        };
+        grid.appendChild(btn);
+      });
+      picker.appendChild(grid);
+
+      document.body.appendChild(picker);
+      const rect=anchor.getBoundingClientRect();
+      picker.style.left=Math.min(rect.left,window.innerWidth-330)+"px";
+      picker.style.top=(rect.bottom+4)+"px";
+
+      setTimeout(()=>document.addEventListener("click",function closeFn(e){
+        if(!picker.contains(e.target)&&e.target!==anchor){closePicker();document.removeEventListener("click",closeFn);}
+      }),0);
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       TEST RUN ANIMATION
+    ────────────────────────────────────────────────────────────── */
+    function animateTestRun(flow, cardEl){
+      if(!cardEl) cardEl=document.querySelector(`[data-flow-id="${flow.id}"]`);
+      if(!cardEl) return;
+      cardEl.classList.add("test-running");
+      const nodes=cardEl.querySelectorAll(".step-node");
+      let i=0;
+      function lightUp(){
+        if(i<nodes.length){
+          nodes[i].style.boxShadow="0 0 0 2px var(--green), 0 0 12px var(--green-glow)";
+          setTimeout(()=>{
+            if(nodes[i]) nodes[i].style.boxShadow="";
+            i++; lightUp();
+          },400);
+        } else {
+          setTimeout(()=>{
+            cardEl.classList.remove("test-running");
+            // Flash the discord preview
+            const msgs=document.getElementById("dcMessages");
+            if(msgs){ msgs.style.background="rgba(16,185,129,.05)"; setTimeout(()=>{msgs.style.background="";},600); }
+            uiToast("Test run complete — preview updated.", {title:"▶ Test run"});
+          }, 200);
+        }
+      }
+      lightUp();
+      updateDiscordPreview();
+    }
 
     function gap(flowId, index){
       const g = document.createElement("div"); g.className="add-gap"; g.textContent="+ Drop action here";
@@ -2786,9 +3736,10 @@ details.adv-toggle .card { margin-top: 6px; }
 
 
 
-    function renderInspector(){
+    function _oldRenderInspector(){
       const insp  = document.getElementById("inspector");
       const empty = document.getElementById("inspectorEmpty");
+      if(!insp||!empty) return;
       insp.innerHTML = "";
       empty.style.display = selection ? "none" : "";
       if(!selection) return;
@@ -3167,18 +4118,25 @@ details.adv-toggle .card { margin-top: 6px; }
       loadSecrets();
     };
 
-    // When switching tabs, also handle secrets tab
+    // Tab switching — studio layout
     document.querySelectorAll(".tab").forEach(t => {
       t.onclick = () => {
         document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
         t.classList.add("active");
         activeTab = t.dataset.tab;
-        document.getElementById("flowsCanvas").style.display    = activeTab==="flows"    ? "block" : "none";
-        document.getElementById("commandsCanvas").style.display = activeTab==="commands" ? "block" : "none";
-        document.getElementById("secretsCanvas").style.display  = activeTab==="secrets"  ? "block" : "none";
+        document.getElementById("flowsCanvas").style.display    = activeTab==="flows"    ? "" : "none";
+        document.getElementById("commandsCanvas").style.display = activeTab==="commands" ? "" : "none";
+        document.getElementById("secretsCanvas").style.display  = activeTab==="secrets"  ? "" : "none";
+        // Hide discord pane when on secrets tab
+        const dp = document.getElementById("discordPane");
+        if(dp) dp.style.display = activeTab==="secrets" ? "none" : "";
+        // Expand builder pane full width on secrets
+        const studio = document.getElementById("studioLayout");
+        if(studio) studio.style.gridTemplateColumns = activeTab==="secrets" ? "1fr" : "";
         selection = null;
-        if (activeTab === "secrets") loadSecrets();  // fetch secrets when tab selected
-        else renderInspector();                      // existing inspector update
+        closeStepPanel?.();
+        if (activeTab === "secrets") loadSecrets();
+        else schedulePreviewDock();
       };
     });
 
@@ -3273,6 +4231,7 @@ details.adv-toggle .card { margin-top: 6px; }
 
 
     /* ---------------- Init ---------------- */
+    renderDiscordShell();
     renderToolbox();
     renderFlows();
     renderCommands();
@@ -3396,19 +4355,8 @@ details.adv-toggle .card { margin-top: 6px; }
 
   </script>
 
-  <div id="previewDock" class="collapsed">
-    <div id="dockHandle" class="handle">
-      <span class="chev">▾</span> Preview
-    </div>
-
-    <div class="dock-inner">
-      <div id="dockHead">
-        <div>Live preview (updates as you edit)</div>
-        <div class="hint">what your bot will send</div>
-      </div>
-      <div id="dockContent"></div>
-    </div>
-  </div>
+  <!-- Legacy preview dock (hidden, kept for fetch_api async path) -->
+  <div id="previewDock" style="display:none"><div id="dockContent"></div></div>
 
 </body>
 </html>
