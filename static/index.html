@@ -704,6 +704,113 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
   .main { border-right: none; }
 }
 
+/* ── Template gallery ──────────────────────────────────────────── */
+.tpl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0 8px;
+}
+.tpl-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color var(--ease), transform var(--ease), box-shadow var(--ease);
+  text-align: left;
+  width: 100%;
+}
+.tpl-card:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  filter: none;
+}
+.tpl-emoji { font-size: 22px; margin-bottom: 8px; display: block; }
+.tpl-name  { font-weight: 700; font-size: 13px; margin-bottom: 3px; color: var(--ink); }
+.tpl-desc  { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.tpl-trigger-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--green-dim);
+  color: var(--green-hi);
+  border: 1px solid rgba(16,185,129,.2);
+}
+#tplModal .modal-content { width: 580px; max-height: 80vh; overflow-y: auto; }
+.tpl-scratch { font-size: 12px; color: var(--muted); text-align: center; padding: 8px; cursor: pointer; margin-top: 4px; }
+.tpl-scratch:hover { color: var(--ink); }
+
+/* ── Advanced toggle ───────────────────────────────────────────── */
+details.adv-toggle { margin-top: 8px; }
+details.adv-toggle > summary {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  cursor: pointer; list-style: none; padding: 8px 0 4px;
+  border-top: 1px solid var(--border);
+  transition: color var(--ease); user-select: none;
+}
+details.adv-toggle > summary:hover { color: var(--ink); }
+details.adv-toggle > summary::-webkit-details-marker { display: none; }
+details.adv-toggle .card { margin-top: 6px; }
+
+/* ── Token button & dropdown ───────────────────────────────────── */
+.tok-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.tok-row label { margin: 0; }
+.token-btn {
+  font-size: 10px; padding: 2px 7px;
+  background: var(--surface-3); border: 1px solid var(--border-hi);
+  color: var(--muted); border-radius: 4px; cursor: pointer; font-weight: 600;
+  flex-shrink: 0; box-shadow: none; transition: color var(--ease), border-color var(--ease);
+}
+.token-btn:hover { color: var(--green-hi); border-color: var(--green); filter: none; transform: none; box-shadow: none; }
+.token-dropdown {
+  position: fixed; z-index: 5000;
+  background: var(--surface-2); border: 1px solid var(--border-hi);
+  border-radius: var(--r-md); padding: 5px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.5);
+  max-height: 220px; overflow-y: auto; min-width: 210px;
+}
+.token-item {
+  display: block; width: 100%; text-align: left;
+  padding: 6px 10px; background: transparent; border: none;
+  color: var(--ink); font-size: 12px; border-radius: 5px;
+  cursor: pointer; font-family: monospace; box-shadow: none;
+}
+.token-item:hover { background: rgba(255,255,255,.06); filter: none; transform: none; }
+.token-item small { color: var(--muted); font-family: inherit; font-size: 11px; display: block; }
+
+/* ── Inline step chips (for if/for_each) ──────────────────────── */
+.step-chips { display: flex; flex-direction: column; gap: 5px; margin: 4px 0; }
+.step-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 6px 10px; font-size: 12px;
+}
+.step-chip-type { font-weight: 600; color: var(--ink); }
+.step-chip-x { color: var(--dim); cursor: pointer; padding: 2px 5px; border-radius: 3px; font-size: 11px; transition: all var(--ease); }
+.step-chip-x:hover { color: #f87171; background: rgba(239,68,68,.12); }
+.step-add-select {
+  margin-top: 4px; font-size: 12px; padding: 5px 8px;
+  background: var(--bg); border: 1px dashed var(--border-hi);
+  border-radius: var(--r-sm); color: var(--muted); width: 100%; cursor: pointer;
+  font-family: inherit;
+}
+.step-add-select:focus { border-color: var(--green); color: var(--ink); outline: none; }
+
+/* ── Flows topbar & saved indicator ───────────────────────────── */
+.flows-topbar {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+}
+#savedIndicator {
+  font-size: 11px; color: var(--green-hi);
+  opacity: 0; transition: opacity 0.4s; margin-right: 4px;
+}
+#savedIndicator.visible { opacity: 1; }
+
   </style>
 </head>
 <body>
@@ -747,6 +854,7 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
       </div>
     </div>
 
+    <span id="savedIndicator">Saved ✓</span>
     <button id="publishAllTop" style="display:none">Publish</button>
     <button id="loginBtn">Sign in with Discord</button>
 
@@ -796,6 +904,11 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         <div class="tab" data-tab="secrets">Secrets</div>
       </div>
 
+      <div class="flows-topbar">
+        <span class="hint" style="font-size:12px">Your automation flows</span>
+        <button id="newFlowBtn">+ New Flow</button>
+      </div>
+
       <section id="flowsCanvas"></section>
       <section id="commandsCanvas" style="display:none"></section>
 
@@ -831,6 +944,16 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         </div>
       </div>
           
+      <!-- Template Gallery Modal -->
+      <div id="tplModal" class="modal hidden">
+        <div class="modal-content card">
+          <h3 style="margin-bottom:4px">Start from a template</h3>
+          <p class="hint" style="margin:0 0 4px">Pick a flow to get started — customize everything after.</p>
+          <div class="tpl-grid" id="tplGrid"></div>
+          <div class="tpl-scratch" id="tplScratch">— or start from scratch —</div>
+        </div>
+      </div>
+
       <!-- Save Draft As Modal -->
       <div id="saveAsModal" class="modal hidden">
         <div class="modal-content card">
@@ -1002,6 +1125,8 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
     let commands = [];   // [{id,name,description,actions:[], enabled?}]
     let activeTab = "flows";
     let selection = null; // {kind:"flow|trigger|action|command|cmd_action", flowId, index?, id?}
+    let _saveTimer = null;
+    let _lastDeleted = null; // {flow, index, action} for 1-level undo
 
     const TOKENS = [
       ["{now}","Current date/time (server timezone)"],
@@ -1330,8 +1455,162 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
     ];
 
 
+    /* =========== Flow Templates =========== */
+    const FLOW_TEMPLATES = [
+      { emoji:"👋", name:"Welcome DM", triggerLabel:"member_join",
+        desc:"DM every new member with a custom welcome message.",
+        flow:{ name:"Welcome DM", trigger:{type:"member_join"},
+          actions:[{type:"dm_user", user_id:"", message_template:"Welcome to {guild_name}, {user_mention}! 🎉 Glad to have you here."}] }},
+      { emoji:"💬", name:"Keyword Auto-Reply", triggerLabel:"message_contains",
+        desc:"Auto-reply when someone types a keyword in chat.",
+        flow:{ name:"Keyword Auto-Reply", trigger:{type:"message_contains", text:"hello"},
+          actions:[{type:"send_message", channel:"", message_template:"Hey {author_mention}! 👋 How can I help?"}] }},
+      { emoji:"🎭", name:"Role Announcement", triggerLabel:"role_added",
+        desc:"Announce in a channel when a member gets a new role.",
+        flow:{ name:"Role Announcement", trigger:{type:"role_added"},
+          actions:[{type:"send_message", channel:"#general", message_template:"🎉 {user_mention} just got the **{role_name}** role!"}] }},
+      { emoji:"📅", name:"Daily Ping", triggerLabel:"schedule",
+        desc:"Send a scheduled message every day (or any interval).",
+        flow:{ name:"Daily Ping", trigger:{type:"schedule", interval_seconds:86400},
+          actions:[{type:"send_message", channel:"#general", message_template:"Good morning {guild_name}! ☀️ Today is {now}."}] }},
+      { emoji:"🔢", name:"Member Milestone", triggerLabel:"member_join",
+        desc:"Celebrate when your server hits a round member count.",
+        flow:{ name:"Member Milestone", trigger:{type:"member_join"},
+          actions:[
+            {type:"if", expr:"member_count", then:[{type:"send_embed", channel:"#general", title:"🎊 Milestone!", embed_description:"We just hit {member_count} members! Welcome {user_mention}!"}], else:[]}
+          ] }},
+      { emoji:"🙅", name:"Bad Word Timeout", triggerLabel:"message_regex",
+        desc:"Auto-timeout members who use banned words.",
+        flow:{ name:"Bad Word Timeout", trigger:{type:"message_regex", pattern:"\\b(badword1|badword2)\\b", flags:"i"},
+          actions:[{type:"timeout", user_id:"", seconds:300, reason:"Automatic: language filter triggered."}] }},
+      { emoji:"🎟️", name:"Support Tickets", triggerLabel:"message_contains",
+        desc:"Let members open a private support ticket with a button.",
+        flow:{ name:"Support Tickets", trigger:{type:"message_contains", text:"!ticket"},
+          actions:[{type:"ticket_panel", channel:"#support", content:"Click the button below to open a support ticket.", staff_role_id:"", category_id:"", transcript_channel_id:""}] }},
+      { emoji:"🌐", name:"API Status Feed", triggerLabel:"schedule",
+        desc:"Fetch an API on a schedule and post the result as an embed.",
+        flow:{ name:"API Status Feed", trigger:{type:"schedule", interval_seconds:3600},
+          actions:[{type:"fetch_api", url:"https://api.example.com/status", method:"GET", reply_mode:"embed", embed_title:"System Status", embed_description:"{data}", channel:"#status"}] }}
+    ];
+
+    function getAvailableTokens(flow, stepIndex) {
+      const base = [
+        ["{now}","Current date/time"], ["{guild_name}","Server name"], ["{member_count}","Member count"]
+      ];
+      if (!flow) return base;
+      const trig = flow.trigger?.type || "";
+      const trigToks = {
+        member_join:      [["{user_mention}","New member mention"],["{user_name}","New member username"],["{joined_at}","Join timestamp"]],
+        message_contains: [["{content}","Message text"],["{author_mention}","Author mention"],["{channel_id}","Channel ID"]],
+        message_regex:    [["{content}","Message text"],["{author_mention}","Author mention"],["{match_groups}","Regex captures"]],
+        reaction_add:     [["{emoji}","Emoji reacted"],["{user_id}","User who reacted"],["{message_id}","Message ID"]],
+        reaction_remove:  [["{emoji}","Emoji removed"],["{user_id}","User who un-reacted"],["{message_id}","Message ID"]],
+        role_added:       [["{role_name}","Role name"],["{role_id}","Role ID"],["{user_id}","User ID"]],
+        role_removed:     [["{role_name}","Role name"],["{role_id}","Role ID"],["{user_id}","User ID"]],
+      };
+      const toks = [...base, ...(trigToks[trig] || [])];
+      (flow.actions || []).slice(0, stepIndex ?? 999).forEach((a, i) => {
+        if (a.type === "set" && a.key) toks.push([`{${a.key}}`, `Set in step ${i+1}`]);
+        const sa = a.save_as || (a.type === "fetch_api" ? "data" : null);
+        if (sa) toks.push([`{${sa}}`, `Fetched in step ${i+1}`]);
+      });
+      return toks;
+    }
+
+    let _tokenDropdownEl = null;
+    function showTokenDropdown(anchor, targetEl, tokens) {
+      if (_tokenDropdownEl) { _tokenDropdownEl.remove(); _tokenDropdownEl = null; }
+      const dd = document.createElement("div"); dd.className = "token-dropdown";
+      tokens.forEach(([tok, desc]) => {
+        const btn = document.createElement("button"); btn.className = "token-item";
+        btn.innerHTML = `${tok}<small>${desc}</small>`;
+        btn.type = "button";
+        btn.onclick = () => {
+          insertAtCursor(targetEl, tok);
+          dd.remove(); _tokenDropdownEl = null;
+        };
+        dd.appendChild(btn);
+      });
+      document.body.appendChild(dd);
+      _tokenDropdownEl = dd;
+      const rect = anchor.getBoundingClientRect();
+      dd.style.top = (rect.bottom + 4) + "px";
+      dd.style.left = Math.min(rect.left, window.innerWidth - 220) + "px";
+      const close = (e) => { if (!dd.contains(e.target) && e.target !== anchor) { dd.remove(); _tokenDropdownEl = null; document.removeEventListener("click", close); } };
+      setTimeout(() => document.addEventListener("click", close), 0);
+    }
+
+    function openTemplateModal() {
+      const modal = document.getElementById("tplModal");
+      const grid  = document.getElementById("tplGrid");
+      grid.innerHTML = "";
+      FLOW_TEMPLATES.forEach(t => {
+        const card = document.createElement("button"); card.className = "tpl-card";
+        card.innerHTML = `<span class="tpl-emoji">${t.emoji}</span><div class="tpl-name">${t.name}</div><div class="tpl-desc">${t.desc}</div><span class="tpl-trigger-badge">${t.triggerLabel}</span>`;
+        card.onclick = () => {
+          createFlow(null, JSON.parse(JSON.stringify(t.flow)));
+          modal.classList.add("hidden");
+          scheduleAutoSave();
+        };
+        grid.appendChild(card);
+      });
+      document.getElementById("tplScratch").onclick = () => {
+        modal.classList.add("hidden");
+      };
+      modal.classList.remove("hidden");
+      modal.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
+    }
+
+    function openActionPicker(flow) {
+      const types = ["send_message","send_embed","dm_user","role_add","role_remove","timeout","fetch_api","set","if","for_each","log","sleep"];
+      const labels = {send_message:"✉️ Send Message", send_embed:"🖼 Send Embed", dm_user:"📨 DM User", role_add:"➕ Add Role", role_remove:"➖ Remove Role", timeout:"⏰ Timeout", fetch_api:"🌐 Fetch API", set:"🧩 Set Variable", if:"🔀 If/Else", for_each:"🔁 For Each", log:"📝 Log", sleep:"⏳ Delay"};
+      // Build quick-pick using uiModal infrastructure
+      const wrap = document.createElement("div");
+      wrap.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px";
+      types.forEach(ty => {
+        const b = document.createElement("button"); b.className = "secondary";
+        b.style.cssText = "justify-content:flex-start;padding:8px 10px;font-size:12px";
+        b.textContent = labels[ty] || ty;
+        b.onclick = () => {
+          const action = applyDefaults({type: ty});
+          flow.actions.push(action);
+          renderFlows();
+          selection = {kind:"action", flowId:flow.id, index:flow.actions.length-1};
+          renderInspector();
+          scheduleAutoSave();
+          document.getElementById("tplModal").classList.add("hidden");
+        };
+        wrap.appendChild(b);
+      });
+      // Reuse tplModal for the action picker
+      const modal = document.getElementById("tplModal");
+      const grid  = document.getElementById("tplGrid");
+      grid.innerHTML = "";
+      const h = document.createElement("h4"); h.textContent = "Add an action"; h.style.marginBottom="0";
+      grid.appendChild(h);
+      grid.appendChild(wrap);
+      grid.style.display = "block";
+      document.getElementById("tplScratch").style.display = "none";
+      modal.classList.remove("hidden");
+      modal.onclick = (e) => { if (e.target === modal) { modal.classList.add("hidden"); grid.style.display=""; document.getElementById("tplScratch").style.display=""; } };
+    }
+
+    function scheduleAutoSave() {
+      const gid = (typeof activeGuildId === "function") ? activeGuildId() : null;
+      if (!gid) return;
+      clearTimeout(_saveTimer);
+      _saveTimer = setTimeout(async () => {
+        try {
+          await saveFlows();
+          await saveCommands();
+          const ind = document.getElementById("savedIndicator");
+          if (ind) { ind.classList.add("visible"); setTimeout(()=>ind.classList.remove("visible"), 2000); }
+        } catch(_) {}
+      }, 1500);
+    }
+
     /* ---------------- Helpers ---------------- */
-    
+
 
     function updatePublishVisibility() {
       const btn = document.getElementById('publishAllTop');
@@ -1342,6 +1621,9 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
     }
 
 
+
+    // New flow button
+    document.getElementById('newFlowBtn')?.addEventListener('click', openTemplateModal);
 
     // Auth/login buttons
     document.getElementById('loginBtn')?.addEventListener('click', () => {
@@ -1515,6 +1797,13 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
       const node = document.createElement('div');
       node.className = `toast ${opts.kind || 'ok'}`;
       node.innerHTML = `<div class="title">${opts.title || 'Notice'}</div><div>${text}</div>`;
+      if (opts.action) {
+        const ab = document.createElement("button");
+        ab.className = "secondary mini"; ab.textContent = opts.action.label;
+        ab.style.marginTop = "8px";
+        ab.onclick = () => { opts.action.fn(); node.remove(); };
+        node.appendChild(ab);
+      }
       stack.appendChild(node);
 
       // auto-dismiss
@@ -2247,7 +2536,28 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
       const host = document.getElementById("flowsCanvas"); host.innerHTML="";
       if(flows.length===0){
         const empty = document.createElement("div");
-        empty.className="card"; empty.innerHTML = "<b>No flows yet.</b> Drag a <i>Trigger</i> from the toolbox to start.";
+        empty.className="card";
+        empty.innerHTML = `<div style="text-align:center;padding:12px 0 4px">
+          <div style="font-size:28px;margin-bottom:10px">⚡</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">No flows yet</div>
+          <div class="hint" style="margin-bottom:16px">Start with a template or drag a trigger from the toolbox.</div>
+        </div>
+        <div class="tpl-grid" style="grid-template-columns:1fr 1fr 1fr">
+          ${FLOW_TEMPLATES.slice(0,3).map(t=>`<button class="tpl-card" data-tpl='${JSON.stringify(t.flow).replace(/'/g,"&#39;")}'>
+            <span class="tpl-emoji">${t.emoji}</span>
+            <div class="tpl-name">${t.name}</div>
+            <div class="tpl-desc">${t.desc}</div>
+          </button>`).join("")}
+        </div>
+        <div style="text-align:center;margin-top:10px">
+          <button id="seeAllTpls" class="secondary" style="font-size:12px">See all templates →</button>
+        </div>`;
+        empty.querySelectorAll(".tpl-card").forEach(btn => {
+          btn.onclick = () => {
+            try { createFlow(null, JSON.parse(btn.dataset.tpl)); scheduleAutoSave(); } catch(_){}
+          };
+        });
+        empty.querySelector("#seeAllTpls")?.addEventListener("click", openTemplateModal);
         host.appendChild(empty);
       }
       flows.forEach(flow=>{
@@ -2256,7 +2566,7 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         // header
         const head = document.createElement("div"); head.className="lane-header";
         head.innerHTML = `<div><b>${flow.name}</b> ${flow.enabled?"<span class='pill' style='background:#16a34a'>enabled</span>":"<span class='pill' style='background:#9ca3af'>off</span>"}</div><div class="toolbar"><label style='display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px'>Enabled <input type='checkbox' ${flow.enabled?"checked":""} /></label><button class="secondary" data-act="rename">Rename</button><button class="secondary" data-act="delete">Delete</button></div>`;
-        head.querySelector("input[type=checkbox]").onchange = (e)=>{ flow.enabled = !!e.target.checked; };
+
         lane.appendChild(head);
 
         // nodes row
@@ -2273,7 +2583,14 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         flow.actions.forEach((a, idx)=>{
           const n = document.createElement("div"); n.className="node action";
           n.innerHTML = `<span class="icon">➡️</span><div><div class="title">${a.type}</div><div class="sub">${subForAction(a)}</div></div><span class="x" title="Remove">✕</span>`;
-          n.onclick = (ev)=>{ if(ev.target.classList.contains("x")){ flow.actions.splice(idx,1); renderFlows(); renderInspector(); } else { selection={kind:"action", flowId:flow.id, index:idx}; renderInspector(); } };
+          n.onclick = (ev)=>{ if(ev.target.classList.contains("x")){
+            _lastDeleted = {flowId:flow.id, index:idx, action:JSON.parse(JSON.stringify(a))};
+            flow.actions.splice(idx,1); renderFlows(); renderInspector(); scheduleAutoSave();
+            uiToast("Action removed.", {title:"Removed", duration:3500, action:{label:"Undo", fn:()=>{
+              const f=flows.find(x=>x.id===_lastDeleted?.flowId);
+              if(f&&_lastDeleted){f.actions.splice(_lastDeleted.index,0,_lastDeleted.action);_lastDeleted=null;renderFlows();}
+            }}});
+          } else { selection={kind:"action", flowId:flow.id, index:idx}; renderInspector(); } };
           // draggable reorder
           n.draggable=true;
           n.addEventListener("dragstart",(ev)=>{ ev.dataTransfer.setData("text/plain", JSON.stringify({reorder:true, flowId:flow.id, index:idx})); });
@@ -2292,10 +2609,20 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
           if(data.type==="template"){ Object.assign(flow, {name:data.data.name||flow.name, trigger:data.data.trigger, actions:data.data.actions||[]}); renderFlows(); }
         });
 
-        lane.querySelector('[data-act="rename"]').onclick = ()=>{ const v = prompt("Flow name", flow.name||""); if(v!==null){ flow.name=v.trim(); renderFlows(); } };
-        lane.querySelector('[data-act="delete"]').onclick = ()=>{ flows = flows.filter(f=>f.id!==flow.id); renderFlows(); renderInspector(); };
+        lane.querySelector('[data-act="rename"]').onclick = ()=>{ const v = prompt("Flow name", flow.name||""); if(v!==null){ flow.name=v.trim(); renderFlows(); scheduleAutoSave(); } };
+        lane.querySelector('[data-act="delete"]').onclick = ()=>{ flows = flows.filter(f=>f.id!==flow.id); renderFlows(); renderInspector(); scheduleAutoSave(); };
+        head.querySelector("input[type=checkbox]").onchange = (e)=>{ flow.enabled = !!e.target.checked; scheduleAutoSave(); };
 
         lane.appendChild(row);
+
+        // "+ Add action" button at bottom of each flow
+        const addActionBtn = document.createElement("button");
+        addActionBtn.className = "secondary mini";
+        addActionBtn.textContent = "+ Add action";
+        addActionBtn.style.cssText = "margin-top:10px;font-size:11px";
+        addActionBtn.onclick = () => openActionPicker(flow);
+        lane.appendChild(addActionBtn);
+
         host.appendChild(lane);
       });
 
@@ -2467,10 +2794,26 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
       if(!selection) return;
 
       // ---------- Small UI helpers ----------
+      // Determine current flow and step index for token context
+      const _curFlow = selection?.flowId ? flows.find(f=>f.id===selection.flowId) : null;
+      const _curIdx  = selection?.index ?? 999;
+      const _availToks = getAvailableTokens(_curFlow, _curIdx);
+
       const fld = (label, el) => {
         const w = document.createElement("div"); w.className="card";
-        const L = document.createElement("label"); L.textContent = label;
-        w.appendChild(L); w.appendChild(el); return w;
+        const isText = el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && el.type !== "number" && el.type !== "checkbox");
+        if (isText) {
+          const row = document.createElement("div"); row.className="tok-row";
+          const L = document.createElement("label"); L.textContent = label;
+          const tb = document.createElement("button"); tb.className="token-btn"; tb.textContent="{ }"; tb.type="button";
+          tb.onclick = (e) => { e.preventDefault(); showTokenDropdown(tb, el, _availToks); };
+          row.appendChild(L); row.appendChild(tb);
+          w.appendChild(row);
+        } else {
+          const L = document.createElement("label"); L.textContent = label;
+          w.appendChild(L);
+        }
+        w.appendChild(el); return w;
       };
       const input = (val, on) => {
         const el = document.createElement("input"); el.value = val ?? "";
@@ -2506,6 +2849,26 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
           catch { el.style.borderColor = "#f59e0b"; }
         };
         return el;
+      };
+
+      // ---------- Step chips helper (for if/for_each) ----------
+      const COMMON_STEP_TYPES = ["send_message","send_embed","dm_user","role_add","role_remove","timeout","set","log","sleep","fetch_api"];
+      const stepChips = (arr, onChange) => {
+        const wrap = document.createElement("div"); wrap.className="step-chips";
+        const render = () => {
+          wrap.innerHTML = "";
+          (arr || []).forEach((step, i) => {
+            const chip = document.createElement("div"); chip.className="step-chip";
+            chip.innerHTML = `<span class="step-chip-type">${step.type || "unknown"}</span><span class="step-chip-x" title="Remove">✕</span>`;
+            chip.querySelector(".step-chip-x").onclick = () => { arr.splice(i,1); onChange(arr); render(); };
+            wrap.appendChild(chip);
+          });
+          const sel = document.createElement("select"); sel.className="step-add-select";
+          sel.innerHTML = `<option value="">+ Add step…</option>` + COMMON_STEP_TYPES.map(t=>`<option value="${t}">${t}</option>`).join("");
+          sel.onchange = () => { if(!sel.value) return; arr.push(applyDefaults({type:sel.value})); onChange(arr); sel.value=""; render(); };
+          wrap.appendChild(sel);
+        };
+        render(); return wrap;
       };
 
       // ---------- Resolve selected object ----------
@@ -2568,6 +2931,11 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
         insp.appendChild(fld("Title", input(obj.title, v=>{ obj.title=v; schedulePreviewDock(); })));
         insp.appendChild(fld("Description", textarea(obj.embed_description, v=>{ obj.embed_description=v; schedulePreviewDock(); })));
+        const embAdv = document.createElement("details"); embAdv.className="adv-toggle";
+        embAdv.innerHTML = "<summary>Advanced options ▾</summary>";
+        embAdv.appendChild(fld("Footer text", input(obj.embed_footer||"", v=>{ obj.embed_footer=v; schedulePreviewDock(); })));
+        embAdv.appendChild(fld("Color (#RRGGBB)", input(obj.embed_color||"#5865F2", v=>{ obj.embed_color=v; schedulePreviewDock(); })));
+        insp.appendChild(embAdv);
       }
       else if(t==="paginate"){
         insp.appendChild(fld("Channel (#name or ID)", input(obj.channel, v=>{ obj.channel=v; })));
@@ -2624,28 +2992,30 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
 
       // ✅ Actions — FETCH API (flows + commands)
       else if(t==="fetch_api"){
-        // General (works for flows and commands; channel is used by flows)
-        insp.appendChild(fld("Channel (flows only; name or ID)", input(obj.channel ?? "", v=>{ obj.channel=v; })));
-        insp.appendChild(fld("Reply mode (message|embed)", input(obj.reply_mode ?? "message", v=>{ obj.reply_mode=v; schedulePreviewDock(); })));
+        // Core fields always visible
+        insp.appendChild(fld("URL", input(obj.url ?? "", v=>{ obj.url=v; })));
+        insp.appendChild(fld("Method", input(obj.method ?? "GET", v=>{ obj.method=v.toUpperCase(); })));
+        insp.appendChild(fld("Channel (#name or ID, flows only)", input(obj.channel ?? "", v=>{ obj.channel=v; })));
         insp.appendChild(fld("Message template (uses {data})", textarea(obj.message_template ?? "API says: {data}", v=>{ obj.message_template=v; schedulePreviewDock(); })));
-        insp.appendChild(fld("Embed title", input(obj.embed_title ?? "API Result", v=>{ obj.embed_title=v; schedulePreviewDock(); })));
-        insp.appendChild(fld("Embed description (uses {data})", textarea(obj.embed_description ?? "{data}", v=>{ obj.embed_description=v; schedulePreviewDock(); })));
-        insp.appendChild(fld("Embed color (#RRGGBB)", input(obj.embed_color ?? "#5865F2", v=>{ obj.embed_color=v; schedulePreviewDock(); })));
 
-        // Request
-        insp.appendChild(fld("Method (GET/POST/PUT/PATCH/DELETE)", input(obj.method ?? "GET", v=>{ obj.method=v.toUpperCase(); })));
-        insp.appendChild(fld("URL (tokens ok, e.g. https://api.site?q={user_name})", input(obj.url ?? "", v=>{ obj.url=v; })));
-        insp.appendChild(fld("Headers JSON (e.g. {\"X-Api-Key\":\"{{secret.KEY}}\"})", textarea(obj.headers ?? "{}", v=>{ obj.headers=v; })));
-        insp.appendChild(fld("Params JSON (query or body if no Body)", textarea(obj.params ?? "{}", v=>{ obj.params=v; })));
-        insp.appendChild(fld("Body JSON (overrides Params for POST/PUT)", textarea(obj.body ?? "", v=>{ obj.body=v; })));
-        insp.appendChild(fld("Timeout (ms)", number(obj.timeout_ms ?? 6000, v=>{ obj.timeout_ms=v; })));
-        insp.appendChild(fld("Expect JSON? (true/false)", input(String(obj.expect_json ?? true), v=>{ obj.expect_json = (String(v).toLowerCase()==="true"); })));
-        insp.appendChild(fld("JSON path (e.g. data.items[0].name)", input(obj.json_path ?? "", v=>{ obj.json_path=v; })));
-
-        // Render style
-        insp.appendChild(fld("Render style (auto|list|table|json)", input(obj.render_style ?? "auto", v=>{ obj.render_style=v.toLowerCase(); schedulePreviewDock(); })));
-        insp.appendChild(fld("Display keys (comma list, e.g. name,uuid)", input(obj.display_keys ?? "", v=>{ obj.display_keys=v; schedulePreviewDock(); })));
-        insp.appendChild(fld("Row template (optional, e.g. {name} — {uuid})", input(obj.row_template ?? "", v=>{ obj.row_template=v; schedulePreviewDock(); })));
+        // Advanced fields behind toggle
+        const adv = document.createElement("details"); adv.className="adv-toggle";
+        adv.innerHTML = "<summary>Advanced options ▾</summary>";
+        const appendAdv = (el) => adv.appendChild(el);
+        appendAdv(fld("Reply mode (message|embed)", input(obj.reply_mode ?? "message", v=>{ obj.reply_mode=v; schedulePreviewDock(); })));
+        appendAdv(fld("Embed title", input(obj.embed_title ?? "API Result", v=>{ obj.embed_title=v; schedulePreviewDock(); })));
+        appendAdv(fld("Embed description (uses {data})", textarea(obj.embed_description ?? "{data}", v=>{ obj.embed_description=v; schedulePreviewDock(); })));
+        appendAdv(fld("Embed color (#RRGGBB)", input(obj.embed_color ?? "#5865F2", v=>{ obj.embed_color=v; schedulePreviewDock(); })));
+        appendAdv(fld("Headers JSON ({\"X-Api-Key\":\"secret\"})", textarea(obj.headers ?? "{}", v=>{ obj.headers=v; })));
+        appendAdv(fld("Params JSON (query string)", textarea(obj.params ?? "{}", v=>{ obj.params=v; })));
+        appendAdv(fld("Body JSON (POST/PUT)", textarea(obj.body ?? "", v=>{ obj.body=v; })));
+        appendAdv(fld("Timeout (ms)", number(obj.timeout_ms ?? 6000, v=>{ obj.timeout_ms=v; })));
+        appendAdv(fld("Expect JSON response?", checkbox(obj.expect_json ?? true, v=>{ obj.expect_json=v; })));
+        appendAdv(fld("JSON path (e.g. data.items[0].name)", input(obj.json_path ?? "", v=>{ obj.json_path=v; })));
+        appendAdv(fld("Render style (auto|list|table|json)", input(obj.render_style ?? "auto", v=>{ obj.render_style=v.toLowerCase(); schedulePreviewDock(); })));
+        appendAdv(fld("Display keys (comma list, e.g. name,uuid)", input(obj.display_keys ?? "", v=>{ obj.display_keys=v; schedulePreviewDock(); })));
+        appendAdv(fld("Row template (optional, e.g. {name} — {uuid})", input(obj.row_template ?? "", v=>{ obj.row_template=v; schedulePreviewDock(); })));
+        insp.appendChild(adv);
       }
 
       // Logic
@@ -2654,19 +3024,35 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
         insp.appendChild(fld("Value", input(obj.value, v=>{ obj.value=v; })));
       }
       else if(t==="if"){
-        insp.appendChild(fld("Expression (uses ctx)", input(obj.expr, v=>{ obj.expr=v; })));
-        insp.appendChild(fld("Then (steps JSON)", arrarea(obj.then, v=>{ obj.then=v; })));
-        insp.appendChild(fld("Else (steps JSON)", arrarea(obj.else, v=>{ obj.else=v; })));
+        insp.appendChild(fld("Condition expression", input(obj.expr, v=>{ obj.expr=v; })));
+        const thenWrap = document.createElement("div"); thenWrap.className="card";
+        const thenLbl = document.createElement("label"); thenLbl.textContent="Then (if true)"; thenWrap.appendChild(thenLbl);
+        if(!Array.isArray(obj.then)) obj.then=[];
+        thenWrap.appendChild(stepChips(obj.then, v=>{ obj.then=v; scheduleAutoSave(); }));
+        insp.appendChild(thenWrap);
+        const elseWrap = document.createElement("div"); elseWrap.className="card";
+        const elseLbl = document.createElement("label"); elseLbl.textContent="Else (if false)"; elseWrap.appendChild(elseLbl);
+        if(!Array.isArray(obj.else)) obj.else=[];
+        elseWrap.appendChild(stepChips(obj.else, v=>{ obj.else=v; scheduleAutoSave(); }));
+        insp.appendChild(elseWrap);
       }
       else if(t==="for_each"){
-        insp.appendChild(fld("Items (ctx key or JSON array)", input(typeof obj.items==="string" ? obj.items : JSON.stringify(obj.items), v=>{
+        insp.appendChild(fld("Items (variable name or JSON array)", input(typeof obj.items==="string" ? obj.items : JSON.stringify(obj.items||[]), v=>{
           try{ obj.items = JSON.parse(v); }catch{ obj.items = v; }
         })));
-        insp.appendChild(fld("As (loop var)", input(obj.as, v=>{ obj.as=v; })));
-        insp.appendChild(fld("Steps (JSON)", arrarea(obj.steps, v=>{ obj.steps=v; })));
+        insp.appendChild(fld("Loop variable name", input(obj.as||"item", v=>{ obj.as=v; })));
+        const stepsWrap = document.createElement("div"); stepsWrap.className="card";
+        const stepsLbl = document.createElement("label"); stepsLbl.textContent="Steps (run for each item)"; stepsWrap.appendChild(stepsLbl);
+        if(!Array.isArray(obj.steps)) obj.steps=[];
+        stepsWrap.appendChild(stepChips(obj.steps, v=>{ obj.steps=v; scheduleAutoSave(); }));
+        insp.appendChild(stepsWrap);
       }
       else if(t==="steps"){
-        insp.appendChild(fld("Steps (JSON)", arrarea(obj.steps, v=>{ obj.steps=v; })));
+        const stepsWrap = document.createElement("div"); stepsWrap.className="card";
+        const stepsLbl = document.createElement("label"); stepsLbl.textContent="Nested steps"; stepsWrap.appendChild(stepsLbl);
+        if(!Array.isArray(obj.steps)) obj.steps=[];
+        stepsWrap.appendChild(stepChips(obj.steps, v=>{ obj.steps=v; scheduleAutoSave(); }));
+        insp.appendChild(stepsWrap);
       }
       else {
         insp.appendChild(fld("Unknown type", input(obj.type, ()=>{})));
@@ -2682,6 +3068,7 @@ button.mini { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
       }
 
       schedulePreviewDock();
+      scheduleAutoSave();
     }
 
 
